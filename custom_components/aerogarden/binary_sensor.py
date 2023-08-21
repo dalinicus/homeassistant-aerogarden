@@ -1,63 +1,40 @@
 import logging
 
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .. import aerogarden
+from .aerogarden import Aerogarden
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["aerogarden"]
-
-
 class AerogardenBinarySensor(BinarySensorEntity):
-    def __init__(self, macaddr, aerogarden_api, field, label=None, icon=None):
-        self._aerogarden = aerogarden_api
-        self._macaddr = macaddr
+    def __init__(self, config_id:int, aerogarden:Aerogarden, field:str, label:str, icon:str):
+        # instance variables
+        self._aerogarden = aerogarden
+        self._config_id = config_id
         self._field = field
         self._label = label
+        self._garden_name = self._aerogarden.garden_name(config_id)
 
-        if not label:
-            self._label = field
-        self._icon = icon
+        # home assistant attributes
+        self._attr_name = f"{self._garden_name} {self._label}"
+        self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
+        self._attr_icon = icon
 
-        self._garden_name = self._aerogarden.garden_name(self._macaddr)
-
-        self._name = "%s %s" % (
-            self._garden_name,
-            self._label,
-        )
-        self._attr_unique_id = self._macaddr + self._label
-
-        self._state = self._aerogarden.garden_property(self._macaddr, self._field)
-
-        _LOGGER.debug("Initialized binary sensor %s:\n%s", field, vars(self))
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def is_on(self):
-        return self._state == 1
-
-    @property
-    def icon(self):
-        return self._icon
+        _LOGGER.debug("Initialized garden binary sensor %s:\n%s", field, vars(self))
 
     def update(self):
         self._aerogarden.update()
-        self._state = self._aerogarden.garden_property(self._macaddr, self._field)
+        self._attr_is_on = self._aerogarden.garden_property(self._config_id, self._field) == 1
 
-
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    ag = hass.data[aerogarden.DOMAIN]
-
+async def async_setup_entry(hass:HomeAssistant, config:ConfigEntry, add_entities_callback:AddEntitiesCallback) -> None:
+    aerogarden:Aerogarden = hass.data[DOMAIN][config.entry_id]
+    
     sensors = []
     sensor_fields = {
-        # "lightStat": {
-        #     "label": "light",
-        #     "icon": "mdi:lightbulb"
-        # },
         "pumpStat": {
             "label": "pump",
             "icon": "mdi:water-pump",
@@ -69,16 +46,16 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         "pumpHydro": {
             "label": "Needs water",
             "icon": "mdi:water",
-        },
+        }
     }
 
-    for garden in ag.gardens:
+    for config_id in aerogarden.get_garden_config_ids():
         for field in sensor_fields.keys():
-            s = sensor_fields[field]
+            sensor_def = sensor_fields[field]
             sensors.append(
                 AerogardenBinarySensor(
-                    garden, ag, field, label=s["label"], icon=s["icon"]
+                    config_id, aerogarden, field, sensor_def["label"], sensor_def["icon"]
                 )
             )
 
-    add_entities(sensors)
+    add_entities_callback(sensors)

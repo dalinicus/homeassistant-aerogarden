@@ -1,87 +1,108 @@
 import logging
 
-from homeassistant.helpers.entity import Entity
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.const import UnitOfTime
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 
-from .. import aerogarden
+from .aerogarden import Aerogarden
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-DEPENDENCIES = ["aerogarden"]
-
-
-class AerogardenSensor(Entity):
-    def __init__(
-        self, macaddr, aerogarden_api, field, label=None, icon=None, unit=None
-    ):
-        self._aerogarden = aerogarden_api
-        self._macaddr = macaddr
+class AerogardenSensor(SensorEntity):
+    def __init__(self, config_id:int, aerogarden:Aerogarden, field:str, label:str, device_class:str, icon:str, unit:str):
+         # instance variables
+        self._aerogarden = aerogarden
+        self._config_id = config_id
         self._field = field
         self._label = label
-        if not label:
-            self._label = field
-        self._icon = icon
-        self._unit = unit
+        self._garden_name = self._aerogarden.get_garden_name(config_id)
 
-        self._garden_name = self._aerogarden.garden_name(self._macaddr)
-
-        self._name = "%s %s" % (
-            self._garden_name,
-            self._label,
-        )
-        self._attr_unique_id = self._macaddr + self._label
-
-        self._state = self._aerogarden.garden_property(self._macaddr, self._field)
+        # home assistant attributes
+        self._attr_name = f"{self._garden_name} {self._label}"
+        self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
+        self._attr_device_class = device_class
+        self._attr_icon = icon
+        self._attr_unit_of_measurement = unit
 
         _LOGGER.debug("Initialized garden sensor %s:\n%s", field, vars(self))
 
-    @property
-    def name(self):
-        return self._name
+    def update(self):
+        self._aerogarden.update()
+        self._attr_native_value = self._aerogarden.get_garden_property(self._config_id, self._field)
 
-    @property
-    def state(self):
-        return self._state
+class AerogardenEnumSensor(SensorEntity):
+    def __init__(self, config_id:int, aerogarden:Aerogarden, field:str, label:str, icon:str, enums:dict):
+         # instance variables
+        self._aerogarden = aerogarden
+        self._config_id = config_id
+        self._field = field
+        self._label = label
+        self._enums = enums
+        self._garden_name = self._aerogarden.get_garden_name(config_id)
 
-    @property
-    def icon(self):
-        return self._icon
+        # home assistant attributes
+        self._attr_name = f"{self._garden_name} {self._label}"
+        self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
+        self._attr_device_class = SensorDeviceClass.ENUM
+        self._attr_icon = icon
+        self._attr_options = enums.values()
 
-    @property
-    def unit_of_measurement(self):
-        return self._unit
+        _LOGGER.debug("Initialized garden sensor %s:\n%s", field, vars(self))
 
     def update(self):
         self._aerogarden.update()
-        self._state = self._aerogarden.garden_property(self._macaddr, self._field)
+        pump_level:int = self._aerogarden.get_garden_property(self._config_id, self._field)
+        self._attr_native_value = self._enums[pump_level]
 
-
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Setup the aerogarden platform"""
-
-    ag = hass.data[aerogarden.DOMAIN]
-
+async def async_setup_entry(hass:HomeAssistant, config:ConfigEntry, add_entities_callback:AddEntitiesCallback) -> None:
+    aerogarden:Aerogarden = hass.data[DOMAIN][config.entry_id]
+    
     sensors = []
     sensor_fields = {
-        "plantedDay": {"label": "Planted Days", "icon": "mdi:calendar", "unit": "Days"},
+        "plantedDay": {
+            "label": "Planted Days", 
+            "icon": "mdi:calendar", 
+            "deviceClass": SensorDeviceClass.DURATION,
+            "unit": UnitOfTime.DAYS
+        },
         "nutriRemindDay": {
             "label": "Nutrient Days",
             "icon": "mdi:calendar-clock",
-            "unit": "Days",
-        },
-        "pumpLevel": {
-            "label": "pump_level",
-            "icon": "mdi:water-percent",
-            "unit": "Fill Level",
-        },
+            "deviceClass": SensorDeviceClass.DURATION,
+            "unit": UnitOfTime.DAYS
+        }
     }
 
-    for garden in ag.gardens:
+    enum_fields = {
+        "pumpLevel": {
+            "label": "Pump Level",
+            "icon": "mdi:water-percent",
+            "enums": {
+                0: "Low",
+                1: "Medium",
+                2: "Full"
+            }
+        }
+    }
+
+    for config_id in aerogarden.get_garden_config_ids():
         for field in sensor_fields.keys():
-            s = sensor_fields[field]
+            sensor_def = sensor_fields[field]
             sensors.append(
                 AerogardenSensor(
-                    garden, ag, field, label=s["label"], icon=s["icon"], unit=s["unit"]
+                    config_id, aerogarden, field, sensor_def["label"], sensor_def["deviceClass"], sensor_def["icon"], sensor_def["unit"]
                 )
             )
 
-    add_entities(sensors)
+        for field in enum_fields.keys():
+            sensor_def = sensor_fields[field]
+            sensors.append(
+                AerogardenEnumSensor(
+                    config_id, aerogarden, field, sensor_def["label"],  sensor_def["icon"], sensor_def["enums"]
+                )
+            )
+    
+    add_entities_callback(sensors)
