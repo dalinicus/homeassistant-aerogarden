@@ -7,6 +7,7 @@
   "codeowners": [
     "@jacobdonenfeld"
   ],
+  "config_flow": true,
   "dependencies": [
     "device_tracker",
     "binary_sensor",
