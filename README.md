@@ -16,6 +16,7 @@ Currently, the code is setup to query the AeroGarden servers every 30 seconds.
 ## Tested Models
 
 * Harvest Wifi
+* Bounty Elite
 
 (Other models are expected to work, since this queries AeroGarden's cloud service rather than the garden directly. Please confirm success in an issue if you use another model, so that the documentation may be updated.)
 
@@ -36,12 +37,7 @@ Your directory structure should look like this:
 
 ### Post installation steps
 - Restart HA
-- Add the following entry to `configuration.yaml`:
-```yaml
-aerogarden:
-    username: [EMAIL]
-    password: [PASSWORD]
-```
+- Add device and configure via config flow dialog
 - Restart HA final time
 
 ## Data available
@@ -64,7 +60,3 @@ The component supports multiple gardens, and multiple sensors will be created fo
 
 ## TODO
 1. Investigate the ease of turning on/off the light. See if it can be dimmed with more control.
-2. Full integration overhaul (See aerogarden-v2 branch)
-   1. integration flow to setup
-   2. Create an aerogarden device
-   3. All calls are done async

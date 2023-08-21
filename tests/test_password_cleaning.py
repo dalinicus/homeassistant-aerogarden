@@ -1,6 +1,6 @@
 import pytest
 
-from custom_components.aerogarden import cleanPassword
+from custom_components.aerogarden.client import __cleanPassword
 
 
 def test_clean_password() -> None:
@@ -10,7 +10,7 @@ def test_clean_password() -> None:
     testText = ["", "small", "okayokay"]
 
     for text in testText:
-        assert cleanPassword(text, password) == text
+        assert __cleanPassword(text, password) == text
 
     password = "pass"
 
@@ -24,4 +24,4 @@ def test_clean_password() -> None:
     ]
 
     for i in range(len(testText)):
-        assert cleanPassword(testText[i], password) == expectedText[i]
+        assert __cleanPassword(testText[i], password) == expectedText[i]
