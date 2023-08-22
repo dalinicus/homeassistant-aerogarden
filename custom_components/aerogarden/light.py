@@ -11,6 +11,12 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
+########
+# This platform is currently disabled pending figuring out a more elegant way to toggle lighting.
+# A binary sensor for light state has been added in its place.
+########
+
+
 class AerogardenLight(LightEntity):
     def __init__(
         self, config_id: int, aerogarden: Aerogarden, field: str, label: str

@@ -2,7 +2,7 @@
 from homeassistant.const import Platform
 
 DOMAIN = "aerogarden"
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.LIGHT]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 USER_AGENT_VERSION = "1.0.0"
 DEFAULT_HOST = "https://app3.aerogarden.com:8443"
 

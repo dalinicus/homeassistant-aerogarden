@@ -68,6 +68,11 @@ async def async_setup_entry(
             "deviceClass": BinarySensorDeviceClass.PROBLEM,
             "icon": "mdi:water",
         },
+        "lightReadOnly": {
+            "label": "Light",
+            "deviceClass": BinarySensorDeviceClass.LIGHT,
+            "icon": "mdi:lightbulb",
+        },
     }
 
     for config_id in aerogarden.get_garden_config_ids():

@@ -1,7 +1,0 @@
-{
-"name": "Aerogarden",
-"render_readme": false,
-"zip_release": true,
-"filename": "aerogarden.zip",
-"homeassistant": "2021.11.0"
-}
