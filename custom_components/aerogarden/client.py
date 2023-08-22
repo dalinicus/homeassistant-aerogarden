@@ -4,32 +4,49 @@ import async_timeout
 import json
 
 from homeassistant.exceptions import HomeAssistantError
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    USER_AGENT_VERSION,
+    GARDEN_KEY_CONFIG_ID,
+    GARDEN_KEY_CHOOSE_GARDEN,
+    GARDEN_KEY_AIR_GUID,
+    GARDEN_KEY_USERNAME,
+    GARDEN_KEY_PASSWORD,
+    GARDEN_KEY_PLANT_CONFIG,
+    GARDEN_KEY_USER_ID,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 API_URL_LOGIN = "/api/Admin/Login"
 API_URL_QUERY_USER_DEVICE = "/api/CustomData/QueryUserDevice"
 API_URL_UPDATE_DEVICE_CONFIG = "/api/Custom/UpdateDeviceConfig"
 
-class AerogardenClient:
-    def __init__(self, host):
-        self._host = host
 
-        with open('manifest.json') as file:
-            manifest = json.load(file)
-            
+class AerogardenClient:
+    def __init__(self, host: str, username: str, password: str) -> None:
+        self._host = host
+        self._username = username
+        self._password = password
+
+        self._user_id = 0
         self._headers = {
-            "User-Agent": f"HA-{DOMAIN}/{manifest['version']}",
+            "User-Agent": f"HA-{DOMAIN}/{USER_AGENT_VERSION}",
             "Content-Type": "application/x-www-form-urlencoded",
         }
-    
-    def login(self, username:str, password:str):
-        """Log into the Aerogarden client using the given credentials, then store the resulting userId"""
-        url = f"{self._host}{API_URL_LOGIN}"
-        post_data = f"mail={username}&userPwd={password}"
 
-        _LOGGER.debug(f"POST - {url}, post data: {self.__clean_password(str(post_data), password)}, headers: {self._headers}")
-        response = self.__post(url, post_data, self._headers)
+    def is_logged_in(self):
+        return self._user_id > 0
+
+    async def login(self):
+        """Log into the Aerogarden client using the given credentials, then store the resulting userId"""
+        response = await self.__post(
+            API_URL_LOGIN,
+            {
+                GARDEN_KEY_USERNAME: self._username,
+                GARDEN_KEY_PASSWORD: self._password,
+            },
+        )
 
         code = response["code"]
         if code <= 0:
@@ -38,37 +55,40 @@ class AerogardenClient:
             elif code == -2:
                 raise AerogardenApiAuthError("User account does not exist.")
             else:
-                raise AerogardenApiAuthError("Login Failed.")
-            
-        self._user_id = code        
-    
-    def get_user_devices(self):
+                raise AerogardenApiAuthError(f"Login Failed.")
+
+        self._user_id = code
+
+    async def get_user_devices(self):
         """Get a list of device configurations. Requires client to be logged in."""
-        if self._user_id <= 0:
+        if not self.is_logged_in():
             raise AerogardenApiConnectError("Aerogarden client is not logged in.")
-        
-        url = f"{self._host}{API_URL_LOGIN}"
-        post_data = f"userID={self._user_id}"
-    
-        _LOGGER.debug(f"POST - url: {url}, post data: {post_data}, headers: {self._headers}")
-        return self.__post(url, post_data, self._headers)
 
+        return await self.__post(
+            API_URL_QUERY_USER_DEVICE, {GARDEN_KEY_USER_ID: self._user_id}
+        )
 
-    def update_device_config(self, airGuid:str, chooseGarden:int, plantConfig:str):
+    async def update_device_config(
+        self, airGuid: str, chooseGarden: int, plantConfig: str
+    ):
         """Update a garden config using a given plant config patch document. Requires client to be logged in."""
-        if self._user_id <= 0:
+        if not self.is_logged_in():
             raise AerogardenApiConnectError("Aerogarden client is not logged in.")
-        
-        url = f"{self._host}{API_URL_LOGIN}"
-        post_data = f"userID={self._user_id}&airGuid={airGuid}&chooseGarden={chooseGarden}&plantConfig={plantConfig}"
 
-        _LOGGER.debug(f"POST - url: {url}, post data: {post_data}, headers: {self._headers}")
-        response = self.__post(url, post_data, self._headers)
+        response = await self.__post(
+            API_URL_UPDATE_DEVICE_CONFIG,
+            {
+                GARDEN_KEY_USER_ID: self._user_id,
+                GARDEN_KEY_AIR_GUID: airGuid,
+                GARDEN_KEY_CHOOSE_GARDEN: chooseGarden,
+                GARDEN_KEY_PLANT_CONFIG: plantConfig,
+            },
+        )
 
         if response["code"] <= 0:
             raise AerogardenApiError("Patching device config was not successful.")
-    
-    def __clean_password(text, password):
+
+    def __clean_password(self, text, password):
         """cleanPassword assumes there is one or zero instances of password in the text
         Replaces the password with <password>
         """
@@ -82,21 +102,34 @@ class AerogardenClient:
                 text = text[:i] + replace_text + rest_of_string
                 break
         return text
-    
+
     async def __post(self, path, post_data):
+        _LOGGER.debug(
+            f"POST - host: {self._host}, path: {path}, post data: {self.__clean_password(str(post_data), self._password)}, headers: {self._headers}"
+        )
+
         async with async_timeout.timeout(10):
-            async with aiohttp.ClientSession(raise_for_status=False, headers=self._headers) as session:
-                async with session.post(f"{self._host}/{path}", data=post_data) as response:
-                    if response.status != 200:
-                        raise AerogardenApiConnectError(f"HTTP Request was unsuccessful with a status code {response.status}")
-                    
+            async with aiohttp.ClientSession(
+                raise_for_status=False, headers=self._headers
+            ) as session:
+                async with session.post(
+                    f"{self._host}{path}", data=post_data
+                ) as response:
+                    if response.status >= 400:
+                        raise AerogardenApiConnectError(
+                            f"HTTP Request was unsuccessful with a status code {response.status}"
+                        )
+
                     return await response.json()
+
 
 class AerogardenApiError(HomeAssistantError):
     """Error thrown to indicate request was successful but the Aerogarden API returned an error"""
 
+
 class AerogardenApiConnectError(HomeAssistantError):
     """Error to indicate troubles connecting to the Aerogarden API"""
+
 
 class AerogardenApiAuthError(HomeAssistantError):
     """Error to indicate authentication or authorization issues with the Aerogarden API"""

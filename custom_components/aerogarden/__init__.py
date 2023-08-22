@@ -4,22 +4,23 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, PLATFORMS, DEFAULT_HOST
+from .const import DOMAIN, PLATFORMS
 from .aerogarden import Aerogarden
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_entry(hass:HomeAssistant, entry:ConfigEntry) -> bool:
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup the aerogarden platform from a config entry."""
     _LOGGER.info(f"Initalizing aerogarden platform for {entry.entry_id}")
 
-    hass.data.setdefault(DOMAIN, {})
-
-    hass.data[DOMAIN][entry.entry_id] = Aerogarden(
-        entry.data[CONF_HOST], 
-        entry.data[CONF_USERNAME],
-        entry.data[CONF_PASSWORD]
+    aerogarden = Aerogarden(
+        entry.data[CONF_HOST], entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
     )
+    await aerogarden.update()
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = aerogarden
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

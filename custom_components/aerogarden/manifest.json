@@ -1,21 +1,14 @@
 {
   "domain": "aerogarden",
   "name": "Aerogarden",
-  "after_dependencies": [
-    "integration"
-  ],
   "codeowners": [
     "@jacobdonenfeld"
   ],
   "config_flow": true,
-  "dependencies": [
-    "device_tracker",
-    "binary_sensor",
-    "light"
-  ],
+  "dependencies": [],
   "documentation": "https://github.com/jacobdonenfeld/homeassistant-aerogarden",
-  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jacobdonenfeld/homeassistant-aerogarden/issues",
+  "iot_class": "cloud_polling",
   "requirements": [],
   "version": "1.0.0"
 }

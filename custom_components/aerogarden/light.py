@@ -10,8 +10,11 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class AerogardenLight(LightEntity):
-    def __init__(self, config_id:int, aerogarden:Aerogarden, field:str, label:str, icon:str):
+    def __init__(
+        self, config_id: int, aerogarden: Aerogarden, field: str, label: str
+    ) -> None:
         # instance variables
         self._aerogarden = aerogarden
         self._config_id = config_id
@@ -22,26 +25,29 @@ class AerogardenLight(LightEntity):
         # home assistant attributes
         self._attr_name = f"{self._garden_name} {self._label}"
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
-        self._attr_icon = icon
 
-        _LOGGER.debug("Initialized garden light %s:\n%s", field, vars(self))
+        _LOGGER.info("Initialized aerogarden light %s:\n%s", field, vars(self))
 
-    def turn_on(self, **kwargs):
-        self._aerogarden.toggle_light(self._config_id)
+    async def async_turn_on(self, **kwargs):
+        await self._aerogarden.toggle_light(self._config_id)
         self._attr_is_on = 1
 
-    def turn_off(self, **kwargs):
-        self._aerogarden.toggle_light(self._config_id)
+    async def async_turn_off(self, **kwargs):
+        await self._aerogarden.toggle_light(self._config_id)
         self._attr_is_on = 0
 
-    def update(self):
-        self._aerogarden.update()
-        self._attr_is_on = self._aerogarden.get_garden_property(self._config_id, self._field) == 1
+    async def async_update(self):
+        await self._aerogarden.update()
+        self._attr_is_on = (
+            self._aerogarden.get_garden_property(self._config_id, self._field) == 1
+        )
 
 
-async def async_setup_entry(hass:HomeAssistant, config:ConfigEntry, add_entities_callback:AddEntitiesCallback) -> None:
-    aerogarden:Aerogarden = hass.data[DOMAIN][config.entry_id]
-    
+async def async_setup_entry(
+    hass: HomeAssistant, config: ConfigEntry, add_entities_callback: AddEntitiesCallback
+) -> None:
+    aerogarden: Aerogarden = hass.data[DOMAIN][config.entry_id]
+
     lights = []
 
     for config_id in aerogarden.get_garden_config_ids():
