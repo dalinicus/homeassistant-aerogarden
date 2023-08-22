@@ -88,24 +88,9 @@ class AerogardenClient:
         if response["code"] <= 0:
             raise AerogardenApiError("Patching device config was not successful.")
 
-    def __clean_password(self, text, password):
-        """cleanPassword assumes there is one or zero instances of password in the text
-        Replaces the password with <password>
-        """
-        password_length = len(password)
-        if password_length == 0:
-            return text
-        replace_text = "<password>"
-        for i in range(len(text) + 1 - password_length):
-            if text[i : (i + password_length)] == password:
-                rest_of_string = text[(i + password_length) :]
-                text = text[:i] + replace_text + rest_of_string
-                break
-        return text
-
     async def __post(self, path, post_data):
         _LOGGER.debug(
-            f"POST - host: {self._host}, path: {path}, post data: {self.__clean_password(str(post_data), self._password)}, headers: {self._headers}"
+            f"POST - {self._host}{path}"
         )
 
         async with async_timeout.timeout(10):
