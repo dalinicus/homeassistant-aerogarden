@@ -53,7 +53,7 @@ class Aerogarden:
     async def toggle_light(self, config_id):
         """Toggles between Bright, Dimmed, and Off."""
 
-        _LOGGER.debug(f"Recieved request to toggle lights on {config_id}")
+        _LOGGER.debug(f"Received request to toggle lights on {config_id}")
         if config_id not in self._data:
             _LOGGER.debug(
                 "light_toggle called for config_id %s, but config does not exist",

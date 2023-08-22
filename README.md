@@ -2,7 +2,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wifi hydroponic gardens. 
+This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wifi hydroponic gardens.
 
 ## Background
 Overhaul of work done by [jacobdonenfeld](https://github.com/jacobdonenfeld/homeassistant-aerogarden) who picked up the torch from [ksheumaker](https://github.com/ksheumaker/homeassistant-aerogarden) who was inspired by a [forum post by epotex](https://community.home-assistant.io/t/first-timer-trying-to-convert-a-working-script-to-create-support-for-a-new-platform).  Utilizes the non-public Aerogarden API to read and write information for gardens added to a user's Aerogarden account.
@@ -14,21 +14,21 @@ The following sensors will be created for each Aerogarden registered in a user's
 * Light - `Light` if garden light is on; `No light` otherwise
 * Needs Nutrients - `Problem` if garden needs nutrients; `OK` otherwise
 * Needs Water -  `Problem` if garden needs water; `OK` otherwise
-* Pump - `Running` if garden pump is running; `Not running` otherwise  
+* Pump - `Running` if garden pump is running; `Not running` otherwise
 
 ![Binary Sensors](/images/binary-sensors.png)
 
 ### Sensors
 * Nutrient Days - Days left in the configured nutrient cycle.
 * Planted Days - Days since the garden was initially planted.
-* Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low` 
+* Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low`
 
 ![Sensors](/images/sensors.png)
 
 ## Tested Models
 
 * Harvest Wifi
-* Bounty 
+* Bounty
 
 Other models are expected to work. Actively interested in users with a multi-garden setup to test code paths I cannot with my single-garden setup.
 

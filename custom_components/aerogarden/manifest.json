@@ -7,8 +7,8 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/dalinicus/homeassistant-aerogarden",
-  "issue_tracker": "https://github.com/dalinicus/homeassistant-aerogarden/issues",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/dalinicus/homeassistant-aerogarden/issues",
   "requirements": [],
   "version": "1.0.1"
 }

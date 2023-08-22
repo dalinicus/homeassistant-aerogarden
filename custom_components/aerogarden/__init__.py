@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup the aerogarden platform from a config entry."""
-    _LOGGER.info(f"Initalizing aerogarden platform for {entry.entry_id}")
+    _LOGGER.info(f"Initializing aerogarden platform for {entry.entry_id}")
 
     aerogarden = Aerogarden(
         entry.data[CONF_HOST], entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
