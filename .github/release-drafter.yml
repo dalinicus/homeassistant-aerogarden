@@ -28,7 +28,6 @@ template: |
 
   [ ] Check stable version reference in documentation is updated
   [ ] Version in custom_components/aerogarden/manifest.json has been updated
-  [ ] Split all changes between the two categories (`Changes` vs `Chages to the Cookiecutter`)
 
   ## Overview of changes
 
