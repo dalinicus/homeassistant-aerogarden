@@ -7,7 +7,6 @@ from homeassistant.exceptions import HomeAssistantError
 from .const import (
     DOMAIN,
     USER_AGENT_VERSION,
-    GARDEN_KEY_CONFIG_ID,
     GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_AIR_GUID,
     GARDEN_KEY_USERNAME,

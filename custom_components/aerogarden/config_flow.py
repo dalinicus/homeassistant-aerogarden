@@ -37,8 +37,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                client = AerogardenClient(user_input[CONF_HOST])
-                await client.login(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
+                client = AerogardenClient(
+                    user_input[CONF_HOST],
+                    user_input[CONF_USERNAME],
+                    user_input[CONF_PASSWORD],
+                )
+                await client.login()
                 _ = await client.get_user_devices()
             except AerogardenApiConnectError:
                 errors["base"] = "cannot_connect"
