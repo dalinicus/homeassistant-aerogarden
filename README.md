@@ -14,15 +14,15 @@ The following sensors will be created for each Aerogarden registered in a user's
 * Light - `Light` if garden light is on; `No light` otherwise
 * Needs Nutrients - `Problem` if garden needs nutrients; `OK` otherwise
 * Needs Water -  `Problem` if garden needs water; `OK` otherwise
-* Pump - `Running` if garden pump is running; `Not running` otherwise
-<br/>  
+* Pump - `Running` if garden pump is running; `Not running` otherwise  
+
 ![Binary Sensors](/images/binary-sensors.png)
 
 ### Sensors
 * Nutrient Days - Days left in the configured nutrient cycle.
 * Planted Days - Days since the garden was initially planted.
-* Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low`
-<br/>  
+* Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low` 
+
 ![Sensors](/images/sensors.png)
 
 ## Tested Models
