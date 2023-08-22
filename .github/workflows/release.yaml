@@ -15,8 +15,11 @@ jobs:
           type: 'zip'
           filename: 'aerogarden.zip'
           exclusions: '*.git* .editorconfig *.vscode* *.github*'
-      - name: Upload Release
-        uses: ncipollo/release-action@v1.12.0
+      - name: Upload zip to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          artifacts: "aerogarden.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: aerogarden.zip
+          asset_name: aerogarden.zip
+          tag: ${{ github.ref }}
+          overwrite: true
