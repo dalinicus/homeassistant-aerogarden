@@ -1,7 +1,6 @@
 import logging
 import aiohttp
 import async_timeout
-import json
 
 from homeassistant.exceptions import HomeAssistantError
 from .const import (
@@ -54,7 +53,7 @@ class AerogardenClient:
             elif code == -2:
                 raise AerogardenApiAuthError("User account does not exist.")
             else:
-                raise AerogardenApiAuthError(f"Login Failed.")
+                raise AerogardenApiAuthError("Login Failed.")
 
         self._user_id = code
 
@@ -88,9 +87,7 @@ class AerogardenClient:
             raise AerogardenApiError("Patching device config was not successful.")
 
     async def __post(self, path, post_data):
-        _LOGGER.debug(
-            f"POST - {self._host}{path}"
-        )
+        _LOGGER.debug(f"POST - {self._host}{path}")
 
         async with async_timeout.timeout(10):
             async with aiohttp.ClientSession(

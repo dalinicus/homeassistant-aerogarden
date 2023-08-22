@@ -1,9 +1,2 @@
-black
-flake8
-pytest
-pytest-cov
-coverage
-homeassistant
-requests
-voluptuous
-datetime
+pre-commit==3.3.3
+
