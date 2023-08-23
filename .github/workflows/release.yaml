@@ -13,6 +13,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
+          path: custom_components/aerogarden
           filename: 'aerogarden.zip'
           exclusions: '*.git* .editorconfig *.vscode* *.github*'
       - name: Upload zip to release
