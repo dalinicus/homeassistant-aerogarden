@@ -8,7 +8,7 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 import voluptuous as vol
 
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_HOST
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_HOST
 
 from .const import DOMAIN, DEFAULT_HOST
 from .client import AerogardenClient, AerogardenApiAuthError, AerogardenApiConnectError
@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_EMAIL): str,
         vol.Required(CONF_PASSWORD): str,
         vol.Optional(CONF_HOST, default=DEFAULT_HOST): str,
     }
@@ -39,7 +39,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 client = AerogardenClient(
                     user_input[CONF_HOST],
-                    user_input[CONF_USERNAME],
+                    user_input[CONF_EMAIL],
                     user_input[CONF_PASSWORD],
                 )
                 await client.login()
@@ -52,13 +52,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(
-                    f"aerogarden-{user_input[CONF_USERNAME]}"
-                )
+                await self.async_set_unique_id(f"aerogarden-{user_input[CONF_EMAIL]}")
                 self._abort_if_unique_id_configured()
 
                 return self.async_create_entry(
-                    title=f"Aerogarden ({user_input[CONF_USERNAME]})", data=user_input
+                    title=f"Aerogarden ({user_input[CONF_EMAIL]})", data=user_input
                 )
 
         return self.async_show_form(
