@@ -21,8 +21,8 @@ _LOGGER = logging.getLogger(__name__)
 class Aerogarden:
     MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=30)
 
-    def __init__(self, host: str, username: str, password: str) -> None:
-        self._client = AerogardenClient(host, username, password)
+    def __init__(self, host: str, email: str, password: str) -> None:
+        self._client = AerogardenClient(host, email, password)
         self._data = {}
 
     def get_garden_config_ids(self):

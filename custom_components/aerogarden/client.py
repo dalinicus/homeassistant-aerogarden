@@ -8,7 +8,7 @@ from .const import (
     USER_AGENT_VERSION,
     GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_AIR_GUID,
-    GARDEN_KEY_USERNAME,
+    GARDEN_KEY_EMAIL,
     GARDEN_KEY_PASSWORD,
     GARDEN_KEY_PLANT_CONFIG,
     GARDEN_KEY_USER_ID,
@@ -22,9 +22,9 @@ API_URL_UPDATE_DEVICE_CONFIG = "/api/Custom/UpdateDeviceConfig"
 
 
 class AerogardenClient:
-    def __init__(self, host: str, username: str, password: str) -> None:
+    def __init__(self, host: str, email: str, password: str) -> None:
         self._host = host
-        self._username = username
+        self._email = email
         self._password = password
 
         self._user_id = 0
@@ -41,7 +41,7 @@ class AerogardenClient:
         response = await self.__post(
             API_URL_LOGIN,
             {
-                GARDEN_KEY_USERNAME: self._username,
+                GARDEN_KEY_EMAIL: self._email,
                 GARDEN_KEY_PASSWORD: self._password,
             },
         )

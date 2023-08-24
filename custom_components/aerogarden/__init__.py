@@ -1,6 +1,6 @@
 import logging
 
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_EMAIL
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -15,7 +15,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.info(f"Initializing aerogarden platform for {entry.entry_id}")
 
     aerogarden = Aerogarden(
-        entry.data[CONF_HOST], entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
+        entry.data[CONF_HOST], entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD]
     )
     await aerogarden.update()
 
