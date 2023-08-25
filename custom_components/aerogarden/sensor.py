@@ -7,20 +7,25 @@ from homeassistant.const import UnitOfTime
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 
 from .aerogarden import Aerogarden
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    GARDEN_KEY_NUTRI_REMIND_DAY,
+    GARDEN_KEY_PUMP_LEVEL,
+    GARDEN_KEY_PLANTED_DAY,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class AerogardenSensor(SensorEntity):
+class AerogardenSensorBase(SensorEntity):
     def __init__(
         self,
         config_id: int,
         aerogarden: Aerogarden,
         field: str,
         label: str,
-        device_class: str,
         icon: str,
+        device_class: str,
         unit: str,
     ) -> None:
         # instance variables
@@ -37,6 +42,19 @@ class AerogardenSensor(SensorEntity):
         self._attr_icon = icon
         self._attr_native_unit_of_measurement = unit
 
+
+class AerogardenSensor(AerogardenSensorBase):
+    def __init__(
+        self,
+        config_id: int,
+        aerogarden: Aerogarden,
+        field: str,
+        label: str,
+        icon: str,
+        unit: str,
+    ) -> None:
+        super().__init__(config_id, aerogarden, field, label, icon, None, unit)
+
         _LOGGER.info("Initialized aerogarden sensor %s:\n%s", field, vars(self))
 
     async def async_update(self):
@@ -45,7 +63,7 @@ class AerogardenSensor(SensorEntity):
         )
 
 
-class AerogardenEnumSensor(SensorEntity):
+class AerogardenEnumSensor(AerogardenSensorBase):
     def __init__(
         self,
         config_id: int,
@@ -55,19 +73,11 @@ class AerogardenEnumSensor(SensorEntity):
         icon: str,
         enums: dict,
     ) -> None:
-        # instance variables
-        self._aerogarden = aerogarden
-        self._config_id = config_id
-        self._field = field
-        self._label = label
-        self._enums = enums
-        self._garden_name = self._aerogarden.get_garden_name(config_id)
+        super().__init__(
+            config_id, aerogarden, field, label, icon, SensorDeviceClass.ENUM, None
+        )
 
-        # home assistant attributes
-        self._attr_name = f"{self._garden_name} {self._label}"
-        self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
-        self._attr_device_class = SensorDeviceClass.ENUM
-        self._attr_icon = icon
+        self._enums = enums
         self._attr_options = list(enums.values())
 
         _LOGGER.info("Initialized aerogarden enum sensor %s:\n%s", field, vars(self))
@@ -87,22 +97,20 @@ async def async_setup_entry(
 
     sensors = []
     sensor_fields = {
-        "plantedDay": {
+        GARDEN_KEY_PLANTED_DAY: {
             "label": "Planted Days",
             "icon": "mdi:calendar",
-            "deviceClass": None,
             "unit": UnitOfTime.DAYS,
         },
-        "nutriRemindDay": {
+        GARDEN_KEY_NUTRI_REMIND_DAY: {
             "label": "Nutrient Days",
             "icon": "mdi:calendar-clock",
-            "deviceClass": None,
             "unit": UnitOfTime.DAYS,
         },
     }
 
     enum_fields = {
-        "pumpLevel": {
+        GARDEN_KEY_PUMP_LEVEL: {
             "label": "Pump Level",
             "icon": "mdi:water-percent",
             "enums": {0: "Low", 1: "Medium", 2: "Full"},
@@ -119,7 +127,6 @@ async def async_setup_entry(
                     aerogarden,
                     field,
                     field_def["label"],
-                    field_def["deviceClass"],
                     field_def["icon"],
                     field_def["unit"],
                 )
