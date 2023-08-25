@@ -1,7 +1,9 @@
 # homeassistant-aerogarden
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
+[![Tests](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml)
+[![codecov](https://codecov.io/gh/dalinicus/homeassistant-aerogarden/graph/badge.svg?token=TNP1DC74AW)](https://codecov.io/gh/dalinicus/homeassistant-aerogarden)
+[![Code Style](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/style.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/style.yaml)
 This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wifi hydroponic gardens.
 
 ## Background
