@@ -2,7 +2,9 @@ pre-commit
 pytest
 pytest-mock
 pytest-cov
+pytest-asyncio
 aioresponses
 black
 codespell
 ruff
+aioresponses
