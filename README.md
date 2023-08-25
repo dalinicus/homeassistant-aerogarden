@@ -17,7 +17,7 @@ Overhaul of work done by [jacobdonenfeld](https://github.com/jacobdonenfeld/home
 The following sensors will be created for each Aerogarden registered in a user's Aerogarden account.
 
 ### Binary Sensors
-* Light - `Light` if garden light is on; `No light` otherwise
+* Light - `On` if garden light is on; `Off` otherwise
 * Needs Nutrients - `Problem` if garden needs nutrients; `OK` otherwise
 * Needs Water -  `Problem` if garden needs water; `OK` otherwise
 * Pump - `Running` if garden pump is running; `Not running` otherwise
