@@ -1,6 +1,7 @@
 pre-commit
 pytest
 pytest-mock
+pytest-cov
 aioresponses
 black
 codespell
