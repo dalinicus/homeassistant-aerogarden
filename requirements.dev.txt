@@ -1,4 +1,7 @@
-pre-commit==3.3.3
+pre-commit
 pytest
 pytest-mock
 aioresponses
+black
+codespell
+ruff

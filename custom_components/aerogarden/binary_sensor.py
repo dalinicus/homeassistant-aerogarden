@@ -9,7 +9,13 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .aerogarden import Aerogarden
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    GARDEN_KEY_NUTRI_STATUS,
+    GARDEN_KEY_PUMP_HYDRO,
+    GARDEN_KEY_LIGHT_STAT,
+    GARDEN_KEY_PUMP_STAT,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,24 +59,24 @@ async def async_setup_entry(
 
     sensors = []
     sensor_fields = {
-        "pumpStat": {
+        GARDEN_KEY_PUMP_STAT: {
             "label": "Pump",
             "deviceClass": BinarySensorDeviceClass.RUNNING,
             "icon": "mdi:water-pump",
         },
-        "nutriStatus": {
+        GARDEN_KEY_NUTRI_STATUS: {
             "label": "Needs Nutrients",
             "deviceClass": BinarySensorDeviceClass.PROBLEM,
             "icon": "mdi:cup-water",
         },
-        "pumpHydro": {
+        GARDEN_KEY_PUMP_HYDRO: {
             "label": "Needs Water",
             "deviceClass": BinarySensorDeviceClass.PROBLEM,
             "icon": "mdi:water",
         },
-        "lightReadOnly": {
+        GARDEN_KEY_LIGHT_STAT: {
             "label": "Light",
-            "deviceClass": BinarySensorDeviceClass.LIGHT,
+            "deviceClass": None,
             "icon": "mdi:lightbulb",
         },
     }

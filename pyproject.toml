@@ -3,7 +3,6 @@
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-addopts = "--cov"
 testpaths = [
     "tests"
 ]
