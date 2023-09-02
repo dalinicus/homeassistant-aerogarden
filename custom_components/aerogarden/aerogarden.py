@@ -1,19 +1,17 @@
-import logging
 import base64
-
+import logging
 from datetime import timedelta
 
-from .const import (
-    GARDEN_KEY_CHOOSE_GARDEN,
-    GARDEN_KEY_AIR_GUID,
-    GARDEN_KEY_PLANTED_NAME,
-    GARDEN_KEY_LIGHT_TEMP,
-    GARDEN_KEY_CONFIG_ID,
-)
-from .client import AerogardenClient
-
-from homeassistant.util import Throttle
 from homeassistant.helpers.update_coordinator import UpdateFailed
+from homeassistant.util import Throttle
+
+from .client import AerogardenClient
+from .const import (
+    GARDEN_KEY_AIR_GUID,
+    GARDEN_KEY_CHOOSE_GARDEN,
+    GARDEN_KEY_CONFIG_ID,
+    GARDEN_KEY_PLANTED_NAME,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +21,7 @@ class Aerogarden:
 
     def __init__(self, host: str, email: str, password: str) -> None:
         self._client = AerogardenClient(host, email, password)
-        self._data = {}
+        self._data: dict = {}
 
     def get_garden_config_ids(self):
         return self._data.keys()
@@ -50,26 +48,6 @@ class Aerogarden:
 
         return self._data[config_id][field]
 
-    async def toggle_light(self, config_id):
-        """Toggles between Bright, Dimmed, and Off."""
-
-        _LOGGER.debug(f"Received request to toggle lights on {config_id}")
-        if config_id not in self._data:
-            _LOGGER.debug(
-                "light_toggle called for config_id %s, but config does not exist",
-                vars(self),
-            )
-            return None
-
-        air_guid = self.get_garden_property(config_id, GARDEN_KEY_AIR_GUID)
-        choose_garden = self.get_garden_property(config_id, GARDEN_KEY_CHOOSE_GARDEN)
-
-        # I couldn't find any way to set a specific state, it just cycles between the three.
-        plant_config = f'{{ "lightTemp" : {self.get_garden_property(config_id, GARDEN_KEY_LIGHT_TEMP)} }}'
-
-        await self._client.update_device_config(air_guid, choose_garden, plant_config)
-        await self.update(no_throttle=True)
-
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def update(self):
         try:
@@ -84,7 +62,7 @@ class Aerogarden:
 
             self._data = data
         except Exception as ex:
-            raise UpdateFailed(ex)
+            raise UpdateFailed from ex
 
     def __is_multi_guarden(self, config_id: int) -> bool:
         choose_garden = self.get_garden_property(config_id, GARDEN_KEY_CHOOSE_GARDEN)

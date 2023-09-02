@@ -1,14 +1,14 @@
-import pytest
-import asyncio
+from asyncio import Future
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_EMAIL
+import pytest
+from homeassistant.config_entries import ConfigEntries, ConfigEntry
+from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntries
+from pytest_mock import MockFixture
 
 from custom_components.aerogarden import async_setup_entry, async_unload_entry
-from custom_components.aerogarden.const import DOMAIN, PLATFORMS
 from custom_components.aerogarden.aerogarden import Aerogarden
+from custom_components.aerogarden.const import DOMAIN, PLATFORMS
 
 HOST = "https://unittest.abcxyz"
 EMAIL = "myemail@unittest.com"
@@ -17,11 +17,11 @@ ENTRY_ID = f"aerogarden-{EMAIL}"
 
 
 @pytest.fixture
-def setup(mocker):
-    future = asyncio.Future()
+def setup(mocker: MockFixture):
+    future: Future = Future()
     future.set_result(None)
 
-    boolFuture = asyncio.Future()
+    boolFuture: Future = Future()
     boolFuture.set_result(True)
 
     mocker.patch.object(Aerogarden, "update", return_value=future)
@@ -47,7 +47,7 @@ def setup(mocker):
 
 
 @pytest.mark.asyncio
-class TestClient:
+class TestInit:
     async def test_async_setup_entry_aerogarden_init(self, setup):
         """when setting up, aerogarden should be initialized and assigned to the hass object"""
         (hass, config_entry) = setup

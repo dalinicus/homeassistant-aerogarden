@@ -1,16 +1,17 @@
+from asyncio import Future
+
 import pytest
-import asyncio
-
 from homeassistant import config_entries
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_HOST
+from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
+from pytest_mock import MockFixture
 
-from custom_components.aerogarden.config_flow import ConfigFlow, CONFIG_SCHEMA
 from custom_components.aerogarden.client import (
-    AerogardenClient,
-    AerogardenApiConnectError,
     AerogardenApiAuthError,
+    AerogardenApiConnectError,
     AerogardenApiError,
+    AerogardenClient,
 )
+from custom_components.aerogarden.config_flow import CONFIG_SCHEMA, ConfigFlow
 
 HOST = "https://unittest.abcxyz"
 EMAIL = "myemail@unittest.com"
@@ -20,8 +21,8 @@ USER_INPUT = {CONF_HOST: HOST, CONF_EMAIL: EMAIL, CONF_PASSWORD: PASSWORD}
 
 
 @pytest.fixture
-def setup(mocker):
-    future = asyncio.Future()
+def setup(mocker: MockFixture):
+    future: Future = Future()
     future.set_result(None)
 
     mocker.patch.object(config_entries.ConfigFlow, "async_show_form")
@@ -35,7 +36,7 @@ def setup(mocker):
 
 
 @pytest.mark.asyncio
-class TestClient:
+class TestConfigFlow:
     async def test_async_step_user_form_shown(self, setup):
         """When a user hasn't given any input yet, show the form"""
 

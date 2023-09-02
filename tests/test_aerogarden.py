@@ -1,9 +1,11 @@
 import pytest
-
 from homeassistant.helpers.update_coordinator import UpdateFailed
+from pytest_mock import MockFixture
+from pytest_mock.plugin import MockType
 
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.client import AerogardenClient
+from custom_components.aerogarden.const import GARDEN_KEY_CONFIG_ID
 
 HOST = "https://unittest.abcxyz"
 EMAIL = "myemail@unittest.com"
@@ -103,7 +105,7 @@ DATA = {
 
 
 @pytest.mark.asyncio
-class TestClient:
+class TestAerogarden:
     async def test_get_garden_config_ids_returns_ids(self):
         """get_garden_config_ids returns ids for all gardens on account"""
 
@@ -167,31 +169,47 @@ class TestClient:
         result = aerogarden.get_garden_property(config_id, field)
         assert value == result
 
-    async def test_update_logged_in_should_not_be_called_if_not_necessary(self, mocker):
+    @pytest.mark.parametrize(
+        "field, config_id",
+        [(GARDEN_KEY_CONFIG_ID, "232161"), ("MyFakeField", CONFIG_ID)],
+    )
+    async def test_get_device_property_returns_null_properly(self, field, config_id):
+        """the absence of a value should return None instead of keyerror"""
+        aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
+        aerogarden._data = DATA
+
+        result = aerogarden.get_garden_property(config_id, field)
+        assert result is None
+
+    async def test_update_logged_in_should_not_be_called_if_not_necessary(
+        self, mocker: MockFixture
+    ):
         """if client is already logged in, than log in should not be called"""
 
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=False)
         mocker.patch.object(AerogardenClient, "get_user_devices", return_value=DEVICES)
-        mocker.patch.object(AerogardenClient, "login")
+        mockLogin: MockType = mocker.patch.object(AerogardenClient, "login")
 
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         await aerogarden.update()
 
-        assert AerogardenClient.login.called
+        assert mockLogin.called
 
-    async def test_update_logged_in_should_called_if_not_logged_in(self, mocker):
+    async def test_update_logged_in_should_called_if_not_logged_in(
+        self, mocker: MockFixture
+    ):
         """if client is not already logged in, than log in should be called"""
 
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=True)
         mocker.patch.object(AerogardenClient, "get_user_devices", return_value=DEVICES)
-        mocker.patch.object(AerogardenClient, "login")
+        mockLogin: MockType = mocker.patch.object(AerogardenClient, "login")
 
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         await aerogarden.update()
 
-        assert not AerogardenClient.login.called
+        assert not mockLogin.called
 
-    async def test_update_data_set(self, mocker):
+    async def test_update_data_set(self, mocker: MockFixture):
         """data should be set once update is called"""
 
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=True)
@@ -203,7 +221,7 @@ class TestClient:
 
         assert len(aerogarden._data) == 5
 
-    async def test_update_update_failed_trhwon(self, mocker):
+    async def test_update_update_failed_trhwon(self, mocker: MockFixture):
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=True)
         mocker.patch.object(
             AerogardenClient,

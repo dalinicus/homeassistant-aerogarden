@@ -1,17 +1,17 @@
 import logging
 
-from homeassistant.core import HomeAssistant
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.const import UnitOfTime
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .aerogarden import Aerogarden
 from .const import (
     DOMAIN,
     GARDEN_KEY_NUTRI_REMIND_DAY,
-    GARDEN_KEY_PUMP_LEVEL,
     GARDEN_KEY_PLANTED_DAY,
+    GARDEN_KEY_PUMP_LEVEL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,14 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class AerogardenSensorBase(SensorEntity):
     def __init__(
-        self,
-        config_id: int,
-        aerogarden: Aerogarden,
-        field: str,
-        label: str,
-        icon: str,
-        device_class: str,
-        unit: str,
+        self, config_id: int, aerogarden: Aerogarden, field: str, label: str, icon: str
     ) -> None:
         # instance variables
         self._aerogarden = aerogarden
@@ -38,9 +31,7 @@ class AerogardenSensorBase(SensorEntity):
         # home assistant attributes
         self._attr_name = f"{self._garden_name} {self._label}"
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
-        self._attr_device_class = device_class
         self._attr_icon = icon
-        self._attr_native_unit_of_measurement = unit
 
 
 class AerogardenSensor(AerogardenSensorBase):
@@ -53,7 +44,8 @@ class AerogardenSensor(AerogardenSensorBase):
         icon: str,
         unit: str,
     ) -> None:
-        super().__init__(config_id, aerogarden, field, label, icon, None, unit)
+        super().__init__(config_id, aerogarden, field, label, icon)
+        self._attr_native_unit_of_measurement = unit
 
         _LOGGER.info("Initialized aerogarden sensor %s:\n%s", field, vars(self))
 
@@ -73,11 +65,10 @@ class AerogardenEnumSensor(AerogardenSensorBase):
         icon: str,
         enums: dict,
     ) -> None:
-        super().__init__(
-            config_id, aerogarden, field, label, icon, SensorDeviceClass.ENUM, None
-        )
+        super().__init__(config_id, aerogarden, field, label, icon)
 
         self._enums = enums
+        self._attr_device_class = SensorDeviceClass.ENUM
         self._attr_options = list(enums.values())
 
         _LOGGER.info("Initialized aerogarden enum sensor %s:\n%s", field, vars(self))
@@ -96,7 +87,7 @@ async def async_setup_entry(
     aerogarden: Aerogarden = hass.data[DOMAIN][config.entry_id]
 
     sensors = []
-    sensor_fields = {
+    sensor_fields: dict[str, dict] = {
         GARDEN_KEY_PLANTED_DAY: {
             "label": "Planted Days",
             "icon": "mdi:calendar",
@@ -109,7 +100,7 @@ async def async_setup_entry(
         },
     }
 
-    enum_fields = {
+    enum_fields: dict[str, dict] = {
         GARDEN_KEY_PUMP_LEVEL: {
             "label": "Pump Level",
             "icon": "mdi:water-percent",
@@ -119,7 +110,7 @@ async def async_setup_entry(
 
     await aerogarden.update()
     for config_id in aerogarden.get_garden_config_ids():
-        _LOGGER.info(f"setting up {config_id}")
+        _LOGGER.info("setting up %(config_id)s", config_id)
         for field, field_def in sensor_fields.items():
             sensors.append(
                 AerogardenSensor(
@@ -132,15 +123,15 @@ async def async_setup_entry(
                 )
             )
 
-        for field, field_def in enum_fields.items():
+        for enum_field, enum_def in enum_fields.items():
             sensors.append(
                 AerogardenEnumSensor(
                     config_id,
                     aerogarden,
-                    field,
-                    field_def["label"],
-                    field_def["icon"],
-                    field_def["enums"],
+                    enum_field,
+                    enum_def["label"],
+                    enum_def["icon"],
+                    enum_def["enums"],
                 )
             )
 
