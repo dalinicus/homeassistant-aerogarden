@@ -2,12 +2,13 @@ import pytest
 from aioresponses import aioresponses
 
 from custom_components.aerogarden.client import (
-    AerogardenClient,
-    AerogardenApiConnectError,
-    AerogardenApiAuthError,
     API_URL_LOGIN,
     API_URL_QUERY_USER_DEVICE,
     API_URL_UPDATE_DEVICE_CONFIG,
+    AerogardenApiAuthError,
+    AerogardenApiConnectError,
+    AerogardenApiError,
+    AerogardenClient,
 )
 
 HOST = "https://unittest.abcxyz"
@@ -17,7 +18,7 @@ PASSWORD = "hunter2"
 USER_ID = 123456
 CONFIG_ID = 987654
 AIR_GUID = "12:34:56:78:10:AB"
-CHOOSE_GARDEN = (0,)
+CHOOSE_GARDEN = 0
 PLANT_CONFIG = '{{ "lightTemp": 1 }}'
 
 DEVICES_PAYLOAD = [
@@ -197,3 +198,18 @@ class TestClient:
         client = AerogardenClient(HOST, EMAIL, PASSWORD)
         with pytest.raises(AerogardenApiConnectError):
             await client.update_device_config(AIR_GUID, CHOOSE_GARDEN, PLANT_CONFIG)
+
+    async def test_update_device_config_error_when_update_fails(self):
+        """When logged in, user devices should return a list of user devices"""
+        client = AerogardenClient(HOST, EMAIL, PASSWORD)
+        client._user_id = USER_ID
+
+        with aioresponses() as mocked:
+            mocked.post(
+                f"{HOST}{API_URL_UPDATE_DEVICE_CONFIG}",
+                status=200,
+                payload={"code": -4, "msg": "Unit Test"},
+            )
+
+            with pytest.raises(AerogardenApiError):
+                await client.update_device_config(AIR_GUID, CHOOSE_GARDEN, PLANT_CONFIG)

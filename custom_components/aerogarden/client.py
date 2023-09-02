@@ -1,17 +1,18 @@
 import logging
+
 import aiohttp
 import async_timeout
-
 from homeassistant.exceptions import HomeAssistantError
+
 from .const import (
     DOMAIN,
-    USER_AGENT_VERSION,
-    GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_AIR_GUID,
+    GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_EMAIL,
     GARDEN_KEY_PASSWORD,
     GARDEN_KEY_PLANT_CONFIG,
     GARDEN_KEY_USER_ID,
+    USER_AGENT_VERSION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,21 +88,17 @@ class AerogardenClient:
             raise AerogardenApiError("Patching device config was not successful.")
 
     async def __post(self, path, post_data):
-        _LOGGER.debug(f"POST - {self._host}{path}")
+        _LOGGER.debug("POST - %{path}", f"{self._host}{path}")
 
-        async with async_timeout.timeout(10):
-            async with aiohttp.ClientSession(
-                raise_for_status=False, headers=self._headers
-            ) as session:
-                async with session.post(
-                    f"{self._host}{path}", data=post_data
-                ) as response:
-                    if response.status >= 400:
-                        raise AerogardenApiConnectError(
-                            f"HTTP Request was unsuccessful with a status code {response.status}"
-                        )
+        async with async_timeout.timeout(10), aiohttp.ClientSession(
+            raise_for_status=False, headers=self._headers
+        ) as session, session.post(f"{self._host}{path}", data=post_data) as response:
+            if response.status >= 400:
+                raise AerogardenApiConnectError(
+                    f"HTTP Request was unsuccessful with a status code {response.status}"
+                )
 
-                    return await response.json()
+            return await response.json()
 
 
 class AerogardenApiError(HomeAssistantError):

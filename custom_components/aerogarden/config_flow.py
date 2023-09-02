@@ -4,14 +4,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
 import voluptuous as vol
+from homeassistant import config_entries
+from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
+from homeassistant.data_entry_flow import FlowResult
 
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_HOST
-
-from .const import DOMAIN, DEFAULT_HOST
-from .client import AerogardenClient, AerogardenApiAuthError, AerogardenApiConnectError
+from .client import AerogardenApiAuthError, AerogardenApiConnectError, AerogardenClient
+from .const import DEFAULT_HOST, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore
     """Handle a config flow for aerogarden."""
 
     VERSION = 1

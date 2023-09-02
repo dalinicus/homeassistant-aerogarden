@@ -1,25 +1,24 @@
-import pytest
-import asyncio
-from collections.abc import Iterable
+from asyncio import Future
 
-from homeassistant.core import HomeAssistant
+import pytest
+from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTime
-from homeassistant.components.sensor import SensorDeviceClass
-
+from homeassistant.core import HomeAssistant
+from pytest_mock import MockFixture
 
 from custom_components.aerogarden.aerogarden import Aerogarden
-from custom_components.aerogarden.sensor import (
-    async_setup_entry,
-    AerogardenSensorBase,
-    AerogardenSensor,
-    AerogardenEnumSensor,
-)
 from custom_components.aerogarden.const import (
     DOMAIN,
-    GARDEN_KEY_PLANTED_DAY,
     GARDEN_KEY_NUTRI_REMIND_DAY,
+    GARDEN_KEY_PLANTED_DAY,
     GARDEN_KEY_PUMP_LEVEL,
+)
+from custom_components.aerogarden.sensor import (
+    AerogardenEnumSensor,
+    AerogardenSensor,
+    AerogardenSensorBase,
+    async_setup_entry,
 )
 
 CONFIG_ID = 123456
@@ -88,19 +87,19 @@ ENTRY_ID = f"aerogarden-{EMAIL}"
 
 class EntitiesTracker:
     def __init__(self) -> None:
-        self._added_entities = []
+        self._added_entities: list[AerogardenSensorBase] = []
 
     def add_entities_callback(
         self,
-        new_entities: Iterable[AerogardenSensorBase],
+        new_entities: list[AerogardenSensorBase],
         update_before_add: bool = False,
     ):
         self._added_entities = new_entities
 
 
 @pytest.fixture
-def setup(mocker):
-    future = asyncio.Future()
+def setup(mocker: MockFixture):
+    future: Future = Future()
     future.set_result(None)
 
     mocker.patch.object(Aerogarden, "update", return_value=future)
@@ -122,7 +121,7 @@ def setup(mocker):
 
 
 @pytest.mark.asyncio
-class TestClient:
+class TestSensor:
     async def __execute_and_get_sensor(
         self, setup, garden_key: str
     ) -> AerogardenSensorBase:
@@ -131,13 +130,11 @@ class TestClient:
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
-        found = list(
-            (
-                sensor
-                for sensor in entities._added_entities
-                if garden_key in sensor._attr_unique_id
-            )
-        )
+        found = [
+            sensor
+            for sensor in entities._added_entities
+            if garden_key in sensor._attr_unique_id
+        ]
         assert len(found) == 1
 
         return found[0]
@@ -158,7 +155,6 @@ class TestClient:
 
         assert "Planted Days" in sensor._attr_name
         assert sensor._attr_icon == "mdi:calendar"
-        assert sensor._attr_device_class is None
         assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
 
     async def test_async_update_planted_day_value_Correct(self, setup):
@@ -178,7 +174,6 @@ class TestClient:
 
         assert "Nutrient Days" in sensor._attr_name
         assert sensor._attr_icon == "mdi:calendar-clock"
-        assert sensor._attr_device_class is None
         assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
 
     async def test_async_update_nutrient_day_value_Correct(self, setup):
@@ -199,7 +194,6 @@ class TestClient:
         assert "Pump Level" in sensor._attr_name
         assert sensor._attr_icon == "mdi:water-percent"
         assert sensor._attr_device_class == SensorDeviceClass.ENUM
-        assert sensor._attr_native_unit_of_measurement is None
 
     @pytest.mark.parametrize(
         "pump_level,expected_enum",

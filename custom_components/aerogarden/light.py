@@ -1,9 +1,9 @@
 import logging
 
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.components.light import LightEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .aerogarden import Aerogarden
 from .const import DOMAIN
@@ -33,14 +33,6 @@ class AerogardenLight(LightEntity):
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
 
         _LOGGER.info("Initialized aerogarden light %s:\n%s", field, vars(self))
-
-    async def async_turn_on(self, **kwargs):
-        await self._aerogarden.toggle_light(self._config_id)
-        self._attr_is_on = 1
-
-    async def async_turn_off(self, **kwargs):
-        await self._aerogarden.toggle_light(self._config_id)
-        self._attr_is_on = 0
 
     async def async_update(self):
         await self._aerogarden.update()

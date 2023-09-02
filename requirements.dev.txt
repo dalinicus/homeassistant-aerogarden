@@ -8,3 +8,4 @@ black
 codespell
 ruff
 aioresponses
+mypy

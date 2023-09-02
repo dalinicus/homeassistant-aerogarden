@@ -1,19 +1,19 @@
 import logging
 
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
 )
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .aerogarden import Aerogarden
 from .const import (
     DOMAIN,
+    GARDEN_KEY_LIGHT_STAT,
     GARDEN_KEY_NUTRI_STATUS,
     GARDEN_KEY_PUMP_HYDRO,
-    GARDEN_KEY_LIGHT_STAT,
     GARDEN_KEY_PUMP_STAT,
 )
 

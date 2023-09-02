@@ -1,23 +1,21 @@
+from asyncio import Future
+
 import pytest
-import asyncio
-from collections.abc import Iterable
-
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from pytest_mock import MockFixture
 
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.binary_sensor import (
-    async_setup_entry,
     AerogardenBinarySensor,
+    async_setup_entry,
 )
-
 from custom_components.aerogarden.const import (
     DOMAIN,
+    GARDEN_KEY_LIGHT_STAT,
     GARDEN_KEY_NUTRI_STATUS,
     GARDEN_KEY_PUMP_HYDRO,
-    GARDEN_KEY_LIGHT_STAT,
     GARDEN_KEY_PUMP_STAT,
 )
 
@@ -87,19 +85,19 @@ ENTRY_ID = f"aerogarden-{EMAIL}"
 
 class EntitiesTracker:
     def __init__(self) -> None:
-        self._added_entities = []
+        self._added_entities: list[AerogardenBinarySensor] = []
 
     def add_entities_callback(
         self,
-        new_entities: Iterable[AerogardenBinarySensor],
+        new_entities: list[AerogardenBinarySensor],
         update_before_add: bool = False,
     ):
         self._added_entities = new_entities
 
 
 @pytest.fixture
-def setup(mocker):
-    future = asyncio.Future()
+def setup(mocker: MockFixture):
+    future: Future = Future()
     future.set_result(None)
 
     mocker.patch.object(Aerogarden, "update", return_value=future)
@@ -121,7 +119,7 @@ def setup(mocker):
 
 
 @pytest.mark.asyncio
-class TestClient:
+class TestBinarySensor:
     async def __execute_and_get_sensor(
         self, setup, garden_key: str
     ) -> AerogardenBinarySensor:
@@ -130,13 +128,11 @@ class TestClient:
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
-        found = list(
-            (
-                sensor
-                for sensor in entities._added_entities
-                if garden_key in sensor._attr_unique_id
-            )
-        )
+        found = [
+            sensor
+            for sensor in entities._added_entities
+            if garden_key in sensor._attr_unique_id
+        ]
         assert len(found) == 1
 
         return found[0]
