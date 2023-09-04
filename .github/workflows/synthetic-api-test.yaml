@@ -1,0 +1,22 @@
+name: Aerogarden API Status
+
+on:
+  schedule:
+  - cron:  '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Synthetic Request
+      id: synthetic-request
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://app3.aerogarden.com:8443/api/CustomData/QueryUserDevice'
+        method: 'POST'
+        customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
+        data: '{"userID": "${{ secrets.AEROGARDEN_USER_ID }}"'
+    - name: Show Response
+      run: |
+        echo ${{ steps.synthetic-request.outputs.response }}
