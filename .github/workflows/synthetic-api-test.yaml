@@ -17,6 +17,3 @@ jobs:
         method: 'POST'
         customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
         data: '{"userID": "${{ secrets.AEROGARDEN_USER_ID }}"'
-    - name: Show Response
-      run: |
-        echo ${{ steps.synthetic-request.outputs.response }}

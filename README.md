@@ -1,5 +1,7 @@
 # homeassistant-aerogarden
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![Aerogarden API Status](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml)
+
 
 [![codecov](https://codecov.io/gh/dalinicus/homeassistant-aerogarden/graph/badge.svg?token=TNP1DC74AW)](https://codecov.io/gh/dalinicus/homeassistant-aerogarden)
 [![Tests](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml)
@@ -12,6 +14,7 @@ This is a custom component for [Home Assistant](http://home-assistant.io) that a
 
 ## Background
 Overhaul of work done by [jacobdonenfeld](https://github.com/jacobdonenfeld/homeassistant-aerogarden) who picked up the torch from [ksheumaker](https://github.com/ksheumaker/homeassistant-aerogarden) who was inspired by a [forum post by epotex](https://community.home-assistant.io/t/first-timer-trying-to-convert-a-working-script-to-create-support-for-a-new-platform).  Utilizes the non-public Aerogarden API to read and write information for gardens added to a user's Aerogarden account.
+
 
 ## Data available
 The following sensors will be created for each Aerogarden registered in a user's Aerogarden account.
@@ -45,3 +48,8 @@ Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories/) to add this 
 
 ### Manual Installation
 Copy `custom_components/aerogarden` into your Home Assistant `$HA_HOME/config` directory, then restart Home Assistant
+
+## Note about the Aerogarden API
+This integration uses a non-public API to fetch information; the same API that is used by Aerogarden devices.  This API has had a number of outages this last year, which leads to issues using this integration.  Please make sure this status badge is reporting green before opening any issues, as a red status would indicate problems with the API and not the Integration
+
+[![Aerogarden API Status](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml)
