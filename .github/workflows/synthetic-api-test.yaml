@@ -13,7 +13,7 @@ jobs:
       id: synthetic-request
       uses: fjogeleit/http-request-action@v1
       with:
-        url: 'https://app3.aerogarden.com:8443/api/CustomData/QueryUserDevice'
+        url: 'https://app3.aerogarden.com:8443/api/CustomData/QueryUserDevi'
         method: 'POST'
         customHeaders: '{"Content-Type": "application/x-www-form-urlencoded"}'
         data: '{"userID": "${{ secrets.AEROGARDEN_USER_ID }}"'
