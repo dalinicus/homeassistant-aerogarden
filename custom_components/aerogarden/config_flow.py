@@ -6,11 +6,11 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.data_entry_flow import FlowResult
 
 from .client import AerogardenApiAuthError, AerogardenApiConnectError, AerogardenClient
-from .const import DEFAULT_HOST, DOMAIN
+from .const import DOMAIN, HOST
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,7 +18,6 @@ CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_EMAIL): str,
         vol.Required(CONF_PASSWORD): str,
-        vol.Optional(CONF_HOST, default=DEFAULT_HOST): str,
     }
 )
 
@@ -37,7 +36,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore
         if user_input is not None:
             try:
                 client = AerogardenClient(
-                    user_input[CONF_HOST],
+                    HOST,
                     user_input[CONF_EMAIL],
                     user_input[CONF_PASSWORD],
                 )

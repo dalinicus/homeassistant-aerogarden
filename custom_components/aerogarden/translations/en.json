@@ -5,8 +5,7 @@
                 "title": "Add Aerogarden Account",
                 "data": {
                     "email": "Email",
-                    "password": "Password",
-                    "host": "Host"
+                    "password": "Password"
                 }
             }
         },

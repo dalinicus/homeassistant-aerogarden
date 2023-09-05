@@ -31,6 +31,7 @@ class AerogardenLight(LightEntity):
         # home assistant attributes
         self._attr_name = f"{self._garden_name} {self._label}"
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
+        self._attr_device_info = aerogarden.get_device_info(config_id)
 
         _LOGGER.info("Initialized aerogarden light %s:\n%s", field, vars(self))
 

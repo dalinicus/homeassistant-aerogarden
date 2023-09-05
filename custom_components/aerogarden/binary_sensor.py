@@ -38,6 +38,7 @@ class AerogardenBinarySensor(BinarySensorEntity):
         self._garden_name = self._aerogarden.get_garden_name(config_id)
 
         # home assistant attributes
+        self._attr_device_info = aerogarden.get_device_info(config_id)
         self._attr_device_class = device_class
         self._attr_name = f"{self._garden_name} {self._label}"
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
