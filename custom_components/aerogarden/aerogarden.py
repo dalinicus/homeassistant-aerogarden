@@ -2,6 +2,7 @@ import base64
 import logging
 from datetime import timedelta
 
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import Throttle
 
@@ -10,7 +11,11 @@ from .const import (
     GARDEN_KEY_AIR_GUID,
     GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_CONFIG_ID,
+    GARDEN_KEY_HW_VERSION,
     GARDEN_KEY_PLANTED_NAME,
+    DOMAIN,
+    GARDEN_KEY_SW_VERSION,
+    MANUFACTURER,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,9 +32,7 @@ class Aerogarden:
         return self._data.keys()
 
     def get_garden_name(self, config_id):
-        planted_name_decoded = base64.b64decode(
-            self.get_garden_property(config_id, GARDEN_KEY_PLANTED_NAME)
-        ).decode("utf-8")
+        planted_name_decoded = self.__get_decoded_garden_name(config_id)
 
         is_multi_garden = self.__is_multi_guarden(config_id)
         if not is_multi_garden:
@@ -48,6 +51,18 @@ class Aerogarden:
 
         return self._data[config_id][field]
 
+    def get_device_info(self, config_id):
+        return DeviceInfo(
+            identifiers={
+                (DOMAIN, self.get_garden_property(config_id, GARDEN_KEY_AIR_GUID)),
+            },
+            name=self.__get_decoded_garden_name(config_id),
+            hw_version=self.get_garden_property(config_id, GARDEN_KEY_HW_VERSION),
+            sw_version=self.get_garden_property(config_id, GARDEN_KEY_SW_VERSION),
+            model=MANUFACTURER,
+            manufacturer=MANUFACTURER,
+        )
+
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def update(self):
         try:
@@ -63,6 +78,11 @@ class Aerogarden:
             self._data = data
         except Exception as ex:
             raise UpdateFailed from ex
+
+    def __get_decoded_garden_name(self, config_id: int) -> str:
+        return base64.b64decode(
+            self.get_garden_property(config_id, GARDEN_KEY_PLANTED_NAME)
+        ).decode("utf-8")
 
     def __is_multi_guarden(self, config_id: int) -> bool:
         choose_garden = self.get_garden_property(config_id, GARDEN_KEY_CHOOSE_GARDEN)

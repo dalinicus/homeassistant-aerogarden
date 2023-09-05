@@ -32,6 +32,7 @@ class AerogardenSensorBase(SensorEntity):
         self._attr_name = f"{self._garden_name} {self._label}"
         self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{self._field}"
         self._attr_icon = icon
+        self._attr_device_info = aerogarden.get_device_info(config_id)
 
 
 class AerogardenSensor(AerogardenSensorBase):

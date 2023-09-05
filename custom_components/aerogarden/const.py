@@ -1,6 +1,7 @@
 """Constants for the Aerogarden integration."""
 from homeassistant.const import Platform
 
+MANUFACTURER = "Aerogarden"
 DOMAIN = "aerogarden"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 USER_AGENT_VERSION = "1.0.0"
@@ -20,6 +21,8 @@ GARDEN_KEY_PUMP_LEVEL = "pumpLevel"
 GARDEN_KEY_PUMP_STAT = "pumpStat"
 GARDEN_KEY_PUMP_HYDRO = "pumpHydro"
 GARDEN_KEY_NUTRI_STATUS = "nutriStatus"
+GARDEN_KEY_HW_VERSION = "hwVersion"
+GARDEN_KEY_SW_VERSION = "swVersion"
 
 GARDEN_KEY_EMAIL = "mail"
 GARDEN_KEY_PASSWORD = "userPwd"
