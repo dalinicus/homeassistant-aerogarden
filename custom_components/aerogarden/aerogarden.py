@@ -8,12 +8,13 @@ from homeassistant.util import Throttle
 
 from .client import AerogardenClient
 from .const import (
+    DOMAIN,
     GARDEN_KEY_AIR_GUID,
     GARDEN_KEY_CHOOSE_GARDEN,
     GARDEN_KEY_CONFIG_ID,
+    GARDEN_KEY_GARDEN_TYPE,
     GARDEN_KEY_HW_VERSION,
     GARDEN_KEY_PLANTED_NAME,
-    DOMAIN,
     GARDEN_KEY_SW_VERSION,
     MANUFACTURER,
 )
@@ -59,7 +60,9 @@ class Aerogarden:
             name=self.__get_decoded_garden_name(config_id),
             hw_version=self.get_garden_property(config_id, GARDEN_KEY_HW_VERSION),
             sw_version=self.get_garden_property(config_id, GARDEN_KEY_SW_VERSION),
-            model=MANUFACTURER,
+            model=self.__get_device_model_by_device_type(
+                self.get_garden_property(config_id, GARDEN_KEY_GARDEN_TYPE)
+            ),
             manufacturer=MANUFACTURER,
         )
 
@@ -96,3 +99,10 @@ class Aerogarden:
             and garden[GARDEN_KEY_CHOOSE_GARDEN] > 0
             for garden in self._data.values()
         )
+
+    def __get_device_model_by_device_type(self, device_type: int):
+        match device_type:
+            case 5:
+                return "Aerogarden Bounty"
+            case _:
+                return f"Aerogarden Type {device_type}"

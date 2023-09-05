@@ -17,7 +17,7 @@ Overhaul of work done by [jacobdonenfeld](https://github.com/jacobdonenfeld/home
 
 
 ## Data available
-The following sensors will be created for each Aerogarden registered in a user's Aerogarden account.
+A device will be created for each Aerogarden registered in a user's Aerogarden account.  A device has the following sensors associated with it:
 
 ### Binary Sensors
 * Light - `On` if garden light is on; `Off` otherwise
@@ -25,14 +25,12 @@ The following sensors will be created for each Aerogarden registered in a user's
 * Needs Water -  `Problem` if garden needs water; `OK` otherwise
 * Pump - `Running` if garden pump is running; `Not running` otherwise
 
-![Binary Sensors](/images/binary-sensors.png)
-
 ### Sensors
 * Nutrient Days - Days left in the configured nutrient cycle.
 * Planted Days - Days since the garden was initially planted.
 * Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low`
 
-![Sensors](/images/sensors.png)
+![Aerogarden-Device](/images/aerogarden-device.png)
 
 ## Tested Models
 

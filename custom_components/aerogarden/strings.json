@@ -5,8 +5,7 @@
                 "title": "Add Aerogarden Account",
                 "data": {
                     "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]",
-                    "host": "[%key:common::config_flow::data::host%]"
+                    "password": "[%key:common::config_flow::data::password%]"
                 }
             }
         },

@@ -5,17 +5,23 @@ from pytest_mock.plugin import MockType
 
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.client import AerogardenClient
-from custom_components.aerogarden.const import GARDEN_KEY_CONFIG_ID
+from custom_components.aerogarden.const import (
+    DOMAIN,
+    GARDEN_KEY_CONFIG_ID,
+    GARDEN_KEY_GARDEN_TYPE,
+    MANUFACTURER,
+)
 
 HOST = "https://unittest.abcxyz"
 EMAIL = "myemail@unittest.com"
 PASSWORD = "hunter2"
 
 CONFIG_ID = 123456
+MAC_ADDR = "12:34:56:78:10:AB"
 DEVICES = [
     {
         "configID": CONFIG_ID,
-        "airGuid": "12:34:56:78:10:AB",
+        "airGuid": "12:98:56:AB:E0:AB",
         "plantedName": "V2UndmUgQmVlbiBUcnlpbmcgVG8gUmVhY2ggWW91IEFib3V0IFlvdXIgQ2FyJ3MgRXh0ZW5kZWQgV2FycmFudHk=",
         "chooseGarden": 0,
     },
@@ -40,7 +46,7 @@ DEVICES = [
     },
     {
         "configID": CONFIG_ID + 4,
-        "airGuid": "12:34:56:78:10:AB",
+        "airGuid": MAC_ADDR,
         "lightCycle": "08000801",
         "pumpCycle": "00050019",
         "lightTemp": 1,
@@ -234,3 +240,25 @@ class TestAerogarden:
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         with pytest.raises(UpdateFailed):
             await aerogarden.update()
+
+    @pytest.mark.parametrize(
+        "garden_type,expected_model",
+        [(5, "Aerogarden Bounty"), (3, "Aerogarden Type 3")],
+    )
+    async def test_ac_infinity_device_has_correct_device_info(
+        self, garden_type: int, expected_model: str
+    ):
+        """getting device returns an model object that contains correct device info for the device registry"""
+        aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
+        aerogarden._data = DATA
+        aerogarden._data[CONFIG_ID + 4][GARDEN_KEY_GARDEN_TYPE] = garden_type
+
+        device_info = aerogarden.get_device_info(CONFIG_ID + 4)
+
+        assert device_info
+        assert (DOMAIN, MAC_ADDR) in device_info.get("identifiers")
+        assert device_info.get("hw_version") == "SW-V1.01"
+        assert device_info.get("sw_version") == "MFW-V0.37"
+        assert device_info.get("name") == "( ͡° ͜ʖ ͡°) Hello there"
+        assert device_info.get("manufacturer") == MANUFACTURER
+        assert device_info.get("model") == expected_model

@@ -5,7 +5,7 @@ MANUFACTURER = "Aerogarden"
 DOMAIN = "aerogarden"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 USER_AGENT_VERSION = "1.0.0"
-DEFAULT_HOST = "https://app3.aerogarden.com:8443"
+HOST = "https://app3.aerogarden.com:8443"
 
 GARDEN_KEY_USER_ID = "userID"
 GARDEN_KEY_CONFIG_ID = "configID"
@@ -23,6 +23,7 @@ GARDEN_KEY_PUMP_HYDRO = "pumpHydro"
 GARDEN_KEY_NUTRI_STATUS = "nutriStatus"
 GARDEN_KEY_HW_VERSION = "hwVersion"
 GARDEN_KEY_SW_VERSION = "swVersion"
+GARDEN_KEY_GARDEN_TYPE = "gardenType"
 
 GARDEN_KEY_EMAIL = "mail"
 GARDEN_KEY_PASSWORD = "userPwd"
