@@ -107,7 +107,7 @@ def setup(mocker: MockFixture):
     aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
     aerogarden._data = {CONFIG_ID: DEVICES[0]}
 
-    hass = HomeAssistant()
+    hass = HomeAssistant("/path")
     hass.data = {DOMAIN: {ENTRY_ID: aerogarden}}
 
     configEntry = ConfigEntry()
