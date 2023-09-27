@@ -6,6 +6,8 @@ DOMAIN = "aerogarden"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 USER_AGENT_VERSION = "1.0.0"
 HOST = "https://app3.aerogarden.com:8443"
+CONF_POLLING_INTERVAL = "polling_interval"
+DEFAULT_POLLING_INTERVAL = 30
 
 GARDEN_KEY_USER_ID = "userID"
 GARDEN_KEY_CONFIG_ID = "configID"

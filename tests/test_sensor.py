@@ -1,12 +1,19 @@
 from asyncio import Future
+from typing import Union
+from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock
 
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import Entity
 from pytest_mock import MockFixture
 
+from custom_components.aerogarden import (
+    AerogardenDataUpdateCoordinator,
+    AerogardenEntity,
+)
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.const import (
     DOMAIN,
@@ -15,12 +22,14 @@ from custom_components.aerogarden.const import (
     GARDEN_KEY_PUMP_LEVEL,
 )
 from custom_components.aerogarden.sensor import (
-    AerogardenEnumSensor,
-    AerogardenSensor,
-    AerogardenSensorBase,
     async_setup_entry,
 )
 
+MockType = Union[
+    MagicMock,
+    AsyncMock,
+    NonCallableMagicMock,
+]
 CONFIG_ID = 123456
 DEVICES = [
     {
@@ -87,11 +96,11 @@ ENTRY_ID = f"aerogarden-{EMAIL}"
 
 class EntitiesTracker:
     def __init__(self) -> None:
-        self._added_entities: list[AerogardenSensorBase] = []
+        self._added_entities: list[AerogardenEntity] = []
 
     def add_entities_callback(
         self,
-        new_entities: list[AerogardenSensorBase],
+        new_entities: list[AerogardenEntity],
         update_before_add: bool = False,
     ):
         self._added_entities = new_entities
@@ -102,31 +111,37 @@ def setup(mocker: MockFixture):
     future: Future = Future()
     future.set_result(None)
 
-    mocker.patch.object(Aerogarden, "update", return_value=future)
     mocker.patch.object(ConfigEntry, "__init__", return_value=None)
     mocker.patch.object(HomeAssistant, "__init__", return_value=None)
+    write_ha_mock = mocker.patch.object(
+        Entity, "async_write_ha_state", return_value=None
+    )
 
     aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
+    mocker.patch.object(aerogarden, "update", return_value=future)
+
     aerogarden._data = {CONFIG_ID: DEVICES[0]}
 
     hass = HomeAssistant("/path")
-    hass.data = {DOMAIN: {ENTRY_ID: aerogarden}}
+    coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
+
+    hass.data = {DOMAIN: {ENTRY_ID: coordinator}}
 
     configEntry = ConfigEntry()
     configEntry.entry_id = ENTRY_ID
 
     entities = EntitiesTracker()
 
-    return (hass, configEntry, entities)
+    return (hass, configEntry, entities, write_ha_mock)
 
 
 @pytest.mark.asyncio
 class TestSensor:
     async def __execute_and_get_sensor(
         self, setup, garden_key: str
-    ) -> AerogardenSensorBase:
+    ) -> AerogardenEntity:
         entities: EntitiesTracker
-        (hass, configEntry, entities) = setup
+        (hass, configEntry, entities, _) = setup
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
@@ -142,7 +157,7 @@ class TestSensor:
     async def test_async_setup_all_sensors_created(self, setup):
         """All sensors created"""
         entities: EntitiesTracker
-        (hass, configEntry, entities) = setup
+        (hass, configEntry, entities, _) = setup
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
@@ -157,16 +172,6 @@ class TestSensor:
         assert sensor._attr_icon == "mdi:calendar"
         assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
 
-    async def test_async_update_planted_day_value_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
-
-        sensor: AerogardenSensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_PLANTED_DAY
-        )
-        await sensor.async_update()
-
-        assert sensor._attr_native_value == 43
-
     async def test_async_setup_entry_nutrient_days_created(self, mocker, setup):
         """Sensor for how many days left in the current nutrient cycle is created on setup"""
 
@@ -175,16 +180,6 @@ class TestSensor:
         assert "Nutrient Days" in sensor._attr_name
         assert sensor._attr_icon == "mdi:calendar-clock"
         assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
-
-    async def test_async_update_nutrient_day_value_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
-
-        sensor: AerogardenSensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_NUTRI_REMIND_DAY
-        )
-        await sensor.async_update()
-
-        assert sensor._attr_native_value == 6
 
     async def test_async_setup_entry_pump_level_created(self, mocker, setup):
         """Sensor for the current reservoir water level is created on setup"""
@@ -196,22 +191,19 @@ class TestSensor:
         assert sensor._attr_device_class == SensorDeviceClass.ENUM
 
     @pytest.mark.parametrize(
-        "pump_level,expected_enum",
+        "field",
         [
-            (2, "Full"),
-            (1, "Medium"),
-            (0, "Low"),
+            GARDEN_KEY_PLANTED_DAY,
+            GARDEN_KEY_NUTRI_REMIND_DAY,
+            GARDEN_KEY_PUMP_LEVEL,
         ],
     )
-    async def test_async_update_pump_level_value_Correct(
-        self, setup, pump_level, expected_enum
-    ):
-        """Reported sensor value matches the value in the json payload"""
-        DEVICES[0]["pumpLevel"] = pump_level
+    async def test_async_handle_coordinator_update(self, setup, field):
+        """Sensor for if the garden pump is on is created on setup"""
 
-        sensor: AerogardenEnumSensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_PUMP_LEVEL
-        )
-        await sensor.async_update()
+        write_ha_mock: MockType
+        (_, _, _, write_ha_mock) = setup
+        sensor = await self.__execute_and_get_sensor(setup, field)
+        sensor._handle_coordinator_update()
 
-        assert sensor._attr_native_value == expected_enum
+        write_ha_mock.assert_called()

@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from homeassistant.util import Throttle
 
 from .client import AerogardenClient
 from .const import (
@@ -32,7 +31,7 @@ class Aerogarden:
     def get_garden_config_ids(self):
         return self._data.keys()
 
-    def get_garden_name(self, config_id):
+    def get_garden_name(self, config_id: int):
         planted_name_decoded = self.__get_decoded_garden_name(config_id)
 
         is_multi_garden = self.__is_multi_guarden(config_id)
@@ -46,13 +45,13 @@ class Aerogarden:
         )
         return f"{planted_name_decoded} ({multi_garden_label})"
 
-    def get_garden_property(self, config_id, field):
+    def get_garden_property(self, config_id: int, field: str):
         if config_id not in self._data or field not in self._data[config_id]:
             return None
 
         return self._data[config_id][field]
 
-    def get_device_info(self, config_id):
+    def get_device_info(self, config_id: int):
         return DeviceInfo(
             identifiers={
                 (DOMAIN, self.get_garden_property(config_id, GARDEN_KEY_AIR_GUID)),
@@ -66,7 +65,6 @@ class Aerogarden:
             manufacturer=MANUFACTURER,
         )
 
-    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def update(self):
         try:
             if not self._client.is_logged_in():
@@ -79,6 +77,7 @@ class Aerogarden:
                 data[config_id] = garden
 
             self._data = data
+            _LOGGER.debug("data set to %s", data)
         except Exception as ex:
             raise UpdateFailed from ex
 

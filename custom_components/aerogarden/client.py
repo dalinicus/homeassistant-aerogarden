@@ -88,7 +88,7 @@ class AerogardenClient:
             raise AerogardenApiError("Patching device config was not successful.")
 
     async def __post(self, path, post_data):
-        _LOGGER.debug("POST - %{path}", f"{self._host}{path}")
+        _LOGGER.debug("POST - %s", f"{self._host}{path}")
 
         async with async_timeout.timeout(10), aiohttp.ClientSession(
             raise_for_status=False, headers=self._headers
