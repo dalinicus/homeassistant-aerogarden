@@ -1,7 +1,7 @@
 # homeassistant-aerogarden
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Aerogarden API Status](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml)
-
 
 [![codecov](https://codecov.io/gh/dalinicus/homeassistant-aerogarden/graph/badge.svg?token=TNP1DC74AW)](https://codecov.io/gh/dalinicus/homeassistant-aerogarden)
 [![Tests](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/tests.yaml)
@@ -13,19 +13,22 @@
 This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wifi hydroponic gardens.
 
 ## Background
+
 Overhaul of work done by [jacobdonenfeld](https://github.com/jacobdonenfeld/homeassistant-aerogarden) who picked up the torch from [ksheumaker](https://github.com/ksheumaker/homeassistant-aerogarden) who was inspired by a [forum post by epotex](https://community.home-assistant.io/t/first-timer-trying-to-convert-a-working-script-to-create-support-for-a-new-platform).  Utilizes the non-public Aerogarden API to read and write information for gardens added to a user's Aerogarden account.
 
-
 ## Data available
+
 A device will be created for each Aerogarden registered in a user's Aerogarden account.  A device has the following sensors associated with it:
 
 ### Binary Sensors
+
 * Light - `On` if garden light is on; `Off` otherwise
 * Needs Nutrients - `Problem` if garden needs nutrients; `OK` otherwise
 * Needs Water -  `Problem` if garden needs water; `OK` otherwise
 * Pump - `Running` if garden pump is running; `Not running` otherwise
 
 ### Sensors
+
 * Nutrient Days - Days left in the configured nutrient cycle.
 * Planted Days - Days since the garden was initially planted.
 * Water Level - Current state of the reservoir level; `Full`, `Medium`, or `Low`
@@ -42,12 +45,32 @@ Other models are expected to work. Actively interested in users with a multi-gar
 ## Installation
 
 ### HACS
+
 Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories/) to add this git repository as a custom HACS repository. Then install from HACS as normal.
 
 ### Manual Installation
+
 Copy `custom_components/aerogarden` into your Home Assistant `$HA_HOME/config` directory, then restart Home Assistant
 
+## Initial Setup
+
+Add an integration entry as normal from integration section of the home assistant settings.  You'll need the following configuration items
+
+* **Email**: The e-mail registered with your AC Infinity account.
+* **Password**: The password for this account.
+
+![Initial-Setup](/images/initial-setup.png)
+
+## Additional Configuration
+
+After adding an integration entry, the following additional configurations can be modified via the configuration options dialog.
+
+* **Polling Interval (Seconds)**: The time between update calls to the AC Infinity API.  Minimum allowed polling interval is 30 seconds.
+
+![Additional-Configuration](/images/additional-configuration.png)
+
 ## Note about the Aerogarden API
+
 This integration uses a non-public API to fetch information; the same API that is used by Aerogarden devices.  This API has had a number of outages this last year, which leads to issues using this integration.  Please make sure this status badge is reporting green before opening any issues, as a red status would indicate problems with the API and not the Integration
 
 [![Aerogarden API Status](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml)

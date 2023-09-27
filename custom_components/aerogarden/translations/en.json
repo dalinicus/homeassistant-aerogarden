@@ -17,5 +17,18 @@
         "abort": {
             "already_configured": "Account is already configured"
         }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Aerogarden Configuration",
+                "data": {
+                    "polling_interval": "Polling Interval (Seconds)"
+                }
+            }
+        },
+        "error": {
+            "invalid_polling_interval": "Polling interval cannot be less than 5 seconds"
+        }
     }
 }
