@@ -4,9 +4,14 @@ import pytest
 from homeassistant.config_entries import ConfigEntries, ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import UpdateFailed
 from pytest_mock import MockFixture
 
-from custom_components.aerogarden import async_setup_entry, async_unload_entry
+from custom_components.aerogarden import (
+    AerogardenDataUpdateCoordinator,
+    async_setup_entry,
+    async_unload_entry,
+)
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.const import DOMAIN, PLATFORMS
 
@@ -79,3 +84,12 @@ class TestInit:
         hass.config_entries.async_unload_platforms.assert_called_with(
             config_entry, PLATFORMS
         )
+
+    async def test_update_update_failed_thrown(self, mocker: MockFixture, setup):
+        (hass, _) = setup
+
+        aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
+        mocker.patch.object(aerogarden, "update", side_effect=Exception("unit test"))
+        coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()

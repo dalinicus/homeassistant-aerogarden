@@ -1,11 +1,15 @@
 from asyncio import Future
+from typing import Union
+from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock
 
 import pytest
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import Entity
 from pytest_mock import MockFixture
 
+from custom_components.aerogarden import AerogardenDataUpdateCoordinator
 from custom_components.aerogarden.aerogarden import Aerogarden
 from custom_components.aerogarden.binary_sensor import (
     AerogardenBinarySensor,
@@ -18,6 +22,12 @@ from custom_components.aerogarden.const import (
     GARDEN_KEY_PUMP_HYDRO,
     GARDEN_KEY_PUMP_STAT,
 )
+
+MockType = Union[
+    MagicMock,
+    AsyncMock,
+    NonCallableMagicMock,
+]
 
 CONFIG_ID = 123456
 DEVICES = [
@@ -100,22 +110,34 @@ def setup(mocker: MockFixture):
     future: Future = Future()
     future.set_result(None)
 
-    mocker.patch.object(Aerogarden, "update", return_value=future)
+    write_ha_mock = mocker.patch.object(
+        Entity, "async_write_ha_state", return_value=None
+    )
+
     mocker.patch.object(ConfigEntry, "__init__", return_value=None)
     mocker.patch.object(HomeAssistant, "__init__", return_value=None)
 
     aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
+    mocker.patch.object(aerogarden, "update", return_value=future)
+
     aerogarden._data = {CONFIG_ID: DEVICES[0]}
 
     hass = HomeAssistant("/path")
-    hass.data = {DOMAIN: {ENTRY_ID: aerogarden}}
+    coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
+
+    hass.data = {DOMAIN: {ENTRY_ID: coordinator}}
 
     configEntry = ConfigEntry()
     configEntry.entry_id = ENTRY_ID
 
     entities = EntitiesTracker()
 
-    return (hass, configEntry, entities)
+    return (
+        hass,
+        configEntry,
+        entities,
+        write_ha_mock,
+    )
 
 
 @pytest.mark.asyncio
@@ -124,7 +146,7 @@ class TestBinarySensor:
         self, setup, garden_key: str
     ) -> AerogardenBinarySensor:
         entities: EntitiesTracker
-        (hass, configEntry, entities) = setup
+        (hass, configEntry, entities, _) = setup
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
@@ -140,7 +162,7 @@ class TestBinarySensor:
     async def test_async_setup_all_sensors_created(self, setup):
         """All sensors created"""
         entities: EntitiesTracker
-        (hass, configEntry, entities) = setup
+        (hass, configEntry, entities, _) = setup
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
@@ -155,16 +177,6 @@ class TestBinarySensor:
         assert sensor._attr_icon == "mdi:water-pump"
         assert sensor._attr_device_class is BinarySensorDeviceClass.RUNNING
 
-    async def test_async_update_pump_value_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
-
-        sensor: AerogardenBinarySensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_PUMP_STAT
-        )
-        await sensor.async_update()
-
-        assert sensor._attr_is_on
-
     async def test_async_setup_entry_needs_nutrients_created(self, setup):
         """Sensor for if the garden needs nutrients is created on setup"""
 
@@ -173,16 +185,6 @@ class TestBinarySensor:
         assert "Needs Nutrients" in sensor._attr_name
         assert sensor._attr_icon == "mdi:cup-water"
         assert sensor._attr_device_class is BinarySensorDeviceClass.PROBLEM
-
-    async def test_async_update_needs_nutrients_value_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
-
-        sensor: AerogardenBinarySensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_NUTRI_STATUS
-        )
-        await sensor.async_update()
-
-        assert sensor._attr_is_on
 
     async def test_async_setup_entry_needs_water_created(self, setup):
         """Sensor for if the garden needs water is created on setup"""
@@ -193,16 +195,6 @@ class TestBinarySensor:
         assert sensor._attr_icon == "mdi:water"
         assert sensor._attr_device_class is BinarySensorDeviceClass.PROBLEM
 
-    async def test_async_update_needs_water_value_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
-
-        sensor: AerogardenBinarySensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_PUMP_HYDRO
-        )
-        await sensor.async_update()
-
-        assert sensor._attr_is_on
-
     async def test_async_setup_entry_light_created(self, setup):
         """Sensor for if the garden light is on is created on setup"""
 
@@ -212,12 +204,21 @@ class TestBinarySensor:
         assert sensor._attr_icon == "mdi:lightbulb"
         assert sensor._attr_device_class is None
 
-    async def test_async_update_needs_light_Correct(self, setup):
-        """Reported sensor value matches the value in the json payload"""
+    @pytest.mark.parametrize(
+        "field",
+        [
+            GARDEN_KEY_PUMP_STAT,
+            GARDEN_KEY_NUTRI_STATUS,
+            GARDEN_KEY_PUMP_HYDRO,
+            GARDEN_KEY_LIGHT_STAT,
+        ],
+    )
+    async def test_async_handle_coordinator_update(self, setup, field):
+        """Sensor for if the garden pump is on is created on setup"""
 
-        sensor: AerogardenBinarySensor = await self.__execute_and_get_sensor(
-            setup, GARDEN_KEY_LIGHT_STAT
-        )
-        await sensor.async_update()
+        write_ha_mock: MockType
+        (_, _, _, write_ha_mock) = setup
+        sensor = await self.__execute_and_get_sensor(setup, field)
+        sensor._handle_coordinator_update()
 
-        assert sensor._attr_is_on
+        write_ha_mock.assert_called()
