@@ -92,3 +92,6 @@ testpaths = [
 filterwarnings = [
     "ignore::DeprecationWarning"
 ]
+
+[tool.codespell]
+skip = '*pt.json'
