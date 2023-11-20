@@ -1,0 +1,34 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "adicionar conta Aerogarden ",
+                "data": {
+                    "email": "Email",
+                    "password": "Senha"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Falha na ligação",
+            "invalid_auth": "Falha na autenticação",
+            "unknown": "Erro desconhecido"
+        },
+        "abort": {
+            "already_configured": "Conta já configurada"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Configurações",
+                "data": {
+                    "polling_interval": "Intervalo de atualização(segundos)"
+                }
+            }
+        },
+        "error": {
+            "invalid_polling_interval": "O intervalo não pode ser inferior a 5 segundos"
+        }
+    }
+}
