@@ -1,6 +1,7 @@
 # homeassistant-aerogarden
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+
 [![Aerogarden API Status](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/synthetic-api-test.yaml)
 
 [![codecov](https://codecov.io/gh/dalinicus/homeassistant-aerogarden/graph/badge.svg?token=TNP1DC74AW)](https://codecov.io/gh/dalinicus/homeassistant-aerogarden)
