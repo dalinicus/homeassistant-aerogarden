@@ -30,7 +30,7 @@
         "error": {
             "invalid_polling_interval": "O intervalo não pode ser inferior a 5 segundos"
         }
-            },
+    },
     "entity": {
         "sensor": {
             "planted_days": {
