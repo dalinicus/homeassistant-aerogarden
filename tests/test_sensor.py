@@ -22,6 +22,7 @@ from custom_components.aerogarden.const import (
     GARDEN_KEY_PUMP_LEVEL,
 )
 from custom_components.aerogarden.sensor import (
+    AerogardenSensor,
     async_setup_entry,
 )
 
@@ -139,7 +140,7 @@ def setup(mocker: MockFixture):
 class TestSensor:
     async def __execute_and_get_sensor(
         self, setup, garden_key: str
-    ) -> AerogardenEntity:
+    ) -> AerogardenSensor:
         entities: EntitiesTracker
         (hass, configEntry, entities, _) = setup
 
@@ -148,7 +149,7 @@ class TestSensor:
         found = [
             sensor
             for sensor in entities._added_entities
-            if garden_key in sensor._attr_unique_id
+            if garden_key in sensor.unique_id
         ]
         assert len(found) == 1
 
@@ -168,27 +169,38 @@ class TestSensor:
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PLANTED_DAY)
 
-        assert "Planted Days" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:calendar"
-        assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.entity_description.translation_key == "planted_days"
+        assert sensor.entity_description.icon == "mdi:calendar"
+        assert sensor.entity_description.device_class == SensorDeviceClass.DURATION
+        assert sensor.entity_description.unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.native_value == 43
 
     async def test_async_setup_entry_nutrient_days_created(self, mocker, setup):
         """Sensor for how many days left in the current nutrient cycle is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_NUTRI_REMIND_DAY)
 
-        assert "Nutrient Days" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:calendar-clock"
-        assert sensor._attr_native_unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.entity_description.translation_key == "nutrient_days"
+        assert sensor.entity_description.icon == "mdi:calendar-clock"
+        assert sensor.entity_description.device_class == SensorDeviceClass.DURATION
+        assert sensor.entity_description.unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.native_value == 6
 
     async def test_async_setup_entry_pump_level_created(self, mocker, setup):
         """Sensor for the current reservoir water level is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PUMP_LEVEL)
 
-        assert "Pump Level" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:water-percent"
-        assert sensor._attr_device_class == SensorDeviceClass.ENUM
+        assert sensor.entity_description.translation_key == "pump_level"
+        assert sensor.entity_description.icon == "mdi:water-percent"
+        assert sensor.entity_description.device_class == SensorDeviceClass.ENUM
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.native_value == "Medium"
 
     @pytest.mark.parametrize(
         "field",
