@@ -30,5 +30,32 @@
         "error": {
             "invalid_polling_interval": "O intervalo não pode ser inferior a 5 segundos"
         }
+            },
+    "entity": {
+        "sensor": {
+            "planted_days": {
+                "name": "Dias desde a plantação"
+            },
+            "nutrient_days": {
+                "name": "Dias de nutrientes restantes"
+            },
+            "pump_level": {
+                "name": "Nivel de água"
+            }
+        },
+        "binary_sensor": {
+            "pump_status": {
+                "name": "Bomba de água"
+            },
+            "light_status": {
+                "name": "Luz de crescimento"
+            },
+            "needs_nutrients": {
+                "name": "Precisa de nutrientes"
+            },
+            "needs_water": {
+                "name": "Precisa de água"
+            }
+        }
     }
 }
