@@ -30,5 +30,32 @@
         "error": {
             "invalid_polling_interval": "Polling interval cannot be less than 5 seconds"
         }
+    },
+    "entity": {
+        "sensor": {
+            "planted_days": {
+                "name": "Days Since Planting"
+            },
+            "nutrient_days": {
+                "name": "Nutrient Days Left"
+            },
+            "pump_level": {
+                "name": "Water Level"
+            }
+        },
+        "binary_sensor": {
+            "pump_status": {
+                "name": "Water Pump"
+            },
+            "light_status": {
+                "name": "Grow Light"
+            },
+            "needs_nutrients": {
+                "name": "Needs Nutrients"
+            },
+            "needs_water": {
+                "name": "Needs Water"
+            }
+        }
     }
 }

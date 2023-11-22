@@ -153,7 +153,7 @@ class TestBinarySensor:
         found = [
             sensor
             for sensor in entities._added_entities
-            if garden_key in sensor._attr_unique_id
+            if garden_key in sensor.unique_id
         ]
         assert len(found) == 1
 
@@ -173,36 +173,36 @@ class TestBinarySensor:
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PUMP_STAT)
 
-        assert "Pump" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:water-pump"
-        assert sensor._attr_device_class is BinarySensorDeviceClass.RUNNING
+        assert sensor.entity_description.translation_key == "pump_status"
+        assert sensor.entity_description.icon == "mdi:water-pump"
+        assert sensor.entity_description.device_class is BinarySensorDeviceClass.RUNNING
 
     async def test_async_setup_entry_needs_nutrients_created(self, setup):
         """Sensor for if the garden needs nutrients is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_NUTRI_STATUS)
 
-        assert "Needs Nutrients" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:cup-water"
-        assert sensor._attr_device_class is BinarySensorDeviceClass.PROBLEM
+        assert sensor.entity_description.translation_key == "needs_nutrients"
+        assert sensor.entity_description.icon == "mdi:cup-water"
+        assert sensor.entity_description.device_class is BinarySensorDeviceClass.PROBLEM
 
     async def test_async_setup_entry_needs_water_created(self, setup):
         """Sensor for if the garden needs water is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PUMP_HYDRO)
 
-        assert "Needs Water" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:water"
-        assert sensor._attr_device_class is BinarySensorDeviceClass.PROBLEM
+        assert sensor.entity_description.translation_key == "needs_water"
+        assert sensor.entity_description.icon == "mdi:water"
+        assert sensor.entity_description.device_class is BinarySensorDeviceClass.PROBLEM
 
     async def test_async_setup_entry_light_created(self, setup):
         """Sensor for if the garden light is on is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_LIGHT_STAT)
 
-        assert "Light" in sensor._attr_name
-        assert sensor._attr_icon == "mdi:lightbulb"
-        assert sensor._attr_device_class is None
+        assert sensor.entity_description.translation_key == "light_status"
+        assert sensor.entity_description.icon == "mdi:lightbulb"
+        assert sensor.entity_description.device_class is None
 
     @pytest.mark.parametrize(
         "field",

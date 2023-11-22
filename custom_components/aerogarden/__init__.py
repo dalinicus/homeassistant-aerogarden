@@ -5,6 +5,7 @@ import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -54,10 +55,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-class AerogardenDataUpdateCoordinator(DataUpdateCoordinator):
+class AerogardenDataUpdateCoordinator(DataUpdateCoordinator[Aerogarden]):
     """Handles updating data for the integration"""
 
-    def __init__(self, hass, aerogarden: Aerogarden, polling_interval: int):
+    def __init__(
+        self, hass: HomeAssistant, aerogarden: Aerogarden, polling_interval: int
+    ) -> None:
         """Constructor"""
         super().__init__(
             hass,
@@ -84,23 +87,28 @@ class AerogardenDataUpdateCoordinator(DataUpdateCoordinator):
         return self._aerogarden
 
 
-class AerogardenEntity(CoordinatorEntity):
+class AerogardenEntity(CoordinatorEntity[AerogardenDataUpdateCoordinator]):
     def __init__(
-        self,
-        coordinator: AerogardenDataUpdateCoordinator,
-        config_id: int,
-        field: str,
-        label: str,
-        icon: str,
-    ):
+        self, coordinator: AerogardenDataUpdateCoordinator, config_id: int, key: str
+    ) -> None:
         super().__init__(coordinator)
-        self._aerogarden: Aerogarden = coordinator.aerogarden
-        self._config_id: int = config_id
-        self._field: str = field
-        self._label: str = label
-        self._garden_name: str = self._aerogarden.get_garden_name(config_id)
+        self._coordinator = coordinator
+        self._config_id = config_id
+        self._key = key
 
-        self._attr_device_info = self._aerogarden.get_device_info(config_id)
-        self._attr_name = f"{self._garden_name} {label}"
-        self._attr_unique_id = f"{DOMAIN}-{self._config_id}-{field}"
-        self._attr_icon = icon
+    _attr_has_entity_name = True
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID for this entity."""
+        return f"{DOMAIN}-{self._config_id}-{self._key}"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this Honeywell Lyric instance."""
+        return self._coordinator.aerogarden.get_device_info(self._config_id)
+
+    @property
+    def aerogarden(self) -> Aerogarden:
+        """Returns the underlying aerogarden api object from the assigned coordinator"""
+        return self._coordinator.aerogarden
