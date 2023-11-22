@@ -176,6 +176,9 @@ class TestBinarySensor:
         assert sensor.entity_description.translation_key == "pump_status"
         assert sensor.entity_description.icon == "mdi:water-pump"
         assert sensor.entity_description.device_class is BinarySensorDeviceClass.RUNNING
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.is_on
 
     async def test_async_setup_entry_needs_nutrients_created(self, setup):
         """Sensor for if the garden needs nutrients is created on setup"""
@@ -185,6 +188,9 @@ class TestBinarySensor:
         assert sensor.entity_description.translation_key == "needs_nutrients"
         assert sensor.entity_description.icon == "mdi:cup-water"
         assert sensor.entity_description.device_class is BinarySensorDeviceClass.PROBLEM
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert not sensor.is_on
 
     async def test_async_setup_entry_needs_water_created(self, setup):
         """Sensor for if the garden needs water is created on setup"""
@@ -194,6 +200,9 @@ class TestBinarySensor:
         assert sensor.entity_description.translation_key == "needs_water"
         assert sensor.entity_description.icon == "mdi:water"
         assert sensor.entity_description.device_class is BinarySensorDeviceClass.PROBLEM
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.is_on
 
     async def test_async_setup_entry_light_created(self, setup):
         """Sensor for if the garden light is on is created on setup"""
@@ -203,6 +212,9 @@ class TestBinarySensor:
         assert sensor.entity_description.translation_key == "light_status"
         assert sensor.entity_description.icon == "mdi:lightbulb"
         assert sensor.entity_description.device_class is None
+        assert sensor.device_info is not None
+        assert sensor.aerogarden is not None
+        assert sensor.is_on
 
     @pytest.mark.parametrize(
         "field",
