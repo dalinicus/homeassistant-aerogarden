@@ -92,7 +92,6 @@ class AerogardenEntity(CoordinatorEntity[AerogardenDataUpdateCoordinator]):
         self, coordinator: AerogardenDataUpdateCoordinator, config_id: int, key: str
     ) -> None:
         super().__init__(coordinator)
-        self._coordinator = coordinator
         self._config_id = config_id
         self._key = key
 
@@ -105,10 +104,10 @@ class AerogardenEntity(CoordinatorEntity[AerogardenDataUpdateCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device information about this Honeywell Lyric instance."""
-        return self._coordinator.aerogarden.get_device_info(self._config_id)
+        """Return device information about Aerogarden device."""
+        return self.coordinator.aerogarden.get_device_info(self._config_id)
 
     @property
     def aerogarden(self) -> Aerogarden:
         """Returns the underlying aerogarden api object from the assigned coordinator"""
-        return self._coordinator.aerogarden
+        return self.coordinator.aerogarden
