@@ -1,14 +1,14 @@
 import asyncio
 from asyncio import Future
 from datetime import timedelta
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceRegistry
 from pytest_mock import MockFixture
 
 from custom_components.aerogarden import AerogardenDataUpdateCoordinator
@@ -26,6 +26,7 @@ from custom_components.aerogarden.config_flow import (
 )
 from custom_components.aerogarden.const import (
     CONF_POLLING_INTERVAL,
+    CONF_UPDATE_PASSWORD,
     DEFAULT_POLLING_INTERVAL,
     DOMAIN,
 )
@@ -46,12 +47,26 @@ def setup_mocks(mocker: MockFixture):
     aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
     coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
 
-    configEntry = ConfigEntry()
-    configEntry.entry_id = "ac_infinity-myemail@unittest.com"
+    config_entry = ConfigEntry()
+    config_entry.entry_id = "ac_infinity-myemail@unittest.com"
+    config_entry.data = {CONF_EMAIL: "unittest@ha.com"}
 
-    hass.data = {DOMAIN: {configEntry.entry_id: coordinator}}
+    hass.data = {DOMAIN: {config_entry.entry_id: coordinator}}
 
-    return (hass, coordinator, configEntry)
+    update_entry = mocker.patch.object(
+        config_entries.ConfigEntries, "async_update_entry"
+    )
+
+    async_call = mocker.patch.object(ServiceRegistry, "async_call")
+
+    options_flow = OptionsFlow(config_entry)
+    options_flow.hass = hass
+    options_flow.hass.config_entries = MagicMock()
+    options_flow.hass.config_entries.async_update_entry = update_entry
+    options_flow.hass.services = MagicMock()
+    options_flow.hass.services.async_call = async_call
+
+    return (hass, coordinator, config_entry, options_flow)
 
 
 @pytest.fixture
@@ -60,6 +75,7 @@ def setup_options_flow(mocker: MockFixture):
     future.set_result(None)
 
     mocker.patch.object(config_entries.OptionsFlow, "async_show_form")
+    mocker.patch.object(config_entries.OptionsFlow, "async_show_menu")
     mocker.patch.object(config_entries.OptionsFlow, "async_create_entry")
 
     return mocker
@@ -147,22 +163,14 @@ class TestConfigFlow:
         self, mocker: MockFixture, setup_options_flow, user_input, setup_mocks
     ):
         """If provided polling interval is valid, update config and data coordinator with new value"""
-        (hass, coordinator, config_entry) = setup_mocks
+        (hass, coordinator, config_entry, options_flow) = setup_mocks
 
         config_entry.data = {}
-        update_entry = mocker.patch.object(
-            config_entries.ConfigEntries, "async_update_entry"
-        )
 
-        flow = OptionsFlow(config_entry)
-        flow.hass = hass
-        flow.hass.config_entries = MagicMock()
-        flow.hass.config_entries.async_update_entry = update_entry
+        await options_flow.async_step_init({CONF_POLLING_INTERVAL: user_input})
 
-        await flow.async_step_init({CONF_POLLING_INTERVAL: user_input})
-
-        flow.async_show_form.assert_not_called()
-        update_entry.assert_called()
+        options_flow.async_show_form.assert_not_called()
+        options_flow.hass.config_entries.async_update_entry.assert_called()
 
         assert coordinator.update_interval == timedelta(seconds=user_input)
 
@@ -197,7 +205,12 @@ class TestConfigFlow:
         flow.async_show_form.assert_called_with(
             step_id="init",
             data_schema=vol.Schema(
-                {vol.Optional(CONF_POLLING_INTERVAL, default=expected_value): int}
+                {
+                    vol.Optional(
+                        CONF_POLLING_INTERVAL, default=DEFAULT_POLLING_INTERVAL
+                    ): int,
+                    vol.Optional(CONF_UPDATE_PASSWORD): str,
+                }
             ),
             errors={},
         )
@@ -220,24 +233,22 @@ class TestConfigFlow:
                 {
                     vol.Optional(
                         CONF_POLLING_INTERVAL, default=DEFAULT_POLLING_INTERVAL
-                    ): int
+                    ): int,
+                    vol.Optional(CONF_UPDATE_PASSWORD): str,
                 }
             ),
             errors={},
         )
         flow.async_create_entry.assert_not_called()
 
-    @pytest.mark.parametrize("user_input", [0, -5, 4])
-    async def test_options_flow_handler_show_form_with_error(
-        self, mocker: MockFixture, setup_options_flow, user_input
+    @pytest.mark.parametrize("polling_interval", [0, -5, 4])
+    async def test_options_flow_handler_show_form_with_error_polling_interval(
+        self, mocker: MockFixture, setup_options_flow, polling_interval, setup_mocks
     ):
         """If provided polling interval is not valid, show form with error"""
 
-        config_entry = mocker.patch.object(
-            config_entries.ConfigEntry, "data", return_value={}
-        )
-        flow = OptionsFlow(config_entry)
-        await flow.async_step_init({CONF_POLLING_INTERVAL: user_input})
+        (_, _, _, flow) = setup_mocks
+        await flow.async_step_init({CONF_POLLING_INTERVAL: polling_interval})
 
         flow.async_show_form.assert_called_with(
             step_id="init",
@@ -245,9 +256,107 @@ class TestConfigFlow:
                 {
                     vol.Optional(
                         CONF_POLLING_INTERVAL, default=DEFAULT_POLLING_INTERVAL
-                    ): int
+                    ): int,
+                    vol.Optional(CONF_UPDATE_PASSWORD): str,
                 }
             ),
-            errors={"base": "invalid_polling_interval"},
+            errors={CONF_POLLING_INTERVAL: "invalid_polling_interval"},
+        )
+        flow.hass.config_entries.async_update_entry.assert_not_called()
+        flow.async_create_entry.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "error,expected",
+        [
+            (AerogardenApiConnectError, "cannot_connect"),
+            (AerogardenApiAuthError, "invalid_auth"),
+            (AerogardenApiError, "unknown"),
+        ],
+    )
+    async def test_options_flow_handler_show_form_with_error_bad_password(
+        self,
+        mocker: MockFixture,
+        setup_options_flow,
+        setup,
+        setup_mocks,
+        error,
+        expected,
+    ):
+        """If provided polling interval is not valid, show form with error"""
+        setup.patch.object(AerogardenClient, "login", side_effect=error)
+
+        (_, _, _, flow) = setup_mocks
+
+        await flow.async_step_init({CONF_UPDATE_PASSWORD: "hunter2"})
+
+        flow.async_show_form.assert_called_with(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_POLLING_INTERVAL, default=DEFAULT_POLLING_INTERVAL
+                    ): int,
+                    vol.Optional(CONF_UPDATE_PASSWORD): str,
+                }
+            ),
+            errors={CONF_UPDATE_PASSWORD: expected},
+        )
+        flow.hass.config_entries.async_update_entry.assert_not_called()
+        flow.async_create_entry.assert_not_called()
+
+    async def test_options_flow_handler_update_password_restart_dialog_shown(
+        self, mocker: MockFixture, setup_options_flow, setup, setup_mocks
+    ):
+        """If provided password is not valid, show form with error"""
+
+        flow: OptionsFlow
+        (_, _, _, flow) = setup_mocks
+
+        await flow.async_step_init({CONF_UPDATE_PASSWORD: "hunter2"})
+
+        flow.async_show_menu.assert_called_with(
+            step_id="notify_restart", menu_options=["restart_yes", "restart_no"]
         )
         flow.async_create_entry.assert_not_called()
+
+    async def test_options_flow_handler_update_values_set_on_config(
+        self, mocker: MockFixture, setup_options_flow, setup, setup_mocks
+    ):
+        """Values provided should be updated via hass"""
+
+        flow: OptionsFlow
+        (_, _, _, flow) = setup_mocks
+
+        await flow.async_step_init(
+            {CONF_POLLING_INTERVAL: 10, CONF_UPDATE_PASSWORD: "hunter2"}
+        )
+
+        flow.hass.config_entries.async_update_entry.assert_called_with(
+            ANY,
+            data={
+                CONF_EMAIL: "unittest@ha.com",
+                CONF_POLLING_INTERVAL: 10,
+                CONF_PASSWORD: "hunter2",
+            },
+        )
+        flow.async_create_entry.assert_not_called()
+
+    async def test_restart_yes_sends_restart_signal(
+        self, mocker: MockFixture, setup_options_flow, setup, setup_mocks
+    ):
+        """The signal for restarting home assistant is called when user selects Restart Now"""
+        flow: OptionsFlow
+        (_, _, _, flow) = setup_mocks
+
+        await flow.async_step_restart_yes(None)
+        flow.hass.services.async_call.assert_called_with("homeassistant", "restart")
+
+    async def test_restart_no_does_not_send_restart_signal(
+        self, mocker: MockFixture, setup_options_flow, setup, setup_mocks
+    ):
+        """The signal for restarting home assistant is called when user selects Restart Later"""
+        flow: OptionsFlow
+        (_, _, _, flow) = setup_mocks
+
+        await flow.async_step_restart_no(None)
+        flow.hass.services.async_call.assert_not_called()

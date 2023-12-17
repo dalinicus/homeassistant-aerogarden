@@ -172,7 +172,7 @@ class TestSensor:
         assert sensor.entity_description.translation_key == "planted_days"
         assert sensor.entity_description.icon == "mdi:calendar"
         assert sensor.entity_description.device_class == SensorDeviceClass.DURATION
-        assert sensor.entity_description.unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.entity_description.native_unit_of_measurement == UnitOfTime.DAYS
         assert sensor.device_info is not None
         assert sensor.aerogarden is not None
         assert sensor.native_value == 43
@@ -185,7 +185,7 @@ class TestSensor:
         assert sensor.entity_description.translation_key == "nutrient_days"
         assert sensor.entity_description.icon == "mdi:calendar-clock"
         assert sensor.entity_description.device_class == SensorDeviceClass.DURATION
-        assert sensor.entity_description.unit_of_measurement == UnitOfTime.DAYS
+        assert sensor.entity_description.native_unit_of_measurement == UnitOfTime.DAYS
         assert sensor.device_info is not None
         assert sensor.aerogarden is not None
         assert sensor.native_value == 6
