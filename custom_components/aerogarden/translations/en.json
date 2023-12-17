@@ -24,7 +24,7 @@
                 "title": "Aerogarden Configuration",
                 "data": {
                     "polling_interval": "Polling Interval (Seconds)",
-                    "update_password": "Password"
+                    "update_password": "Update Password"
                 },
                 "data_description": {
                     "update_password": "Updating password requires a restart of Home Assistant."
