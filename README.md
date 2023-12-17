@@ -57,7 +57,7 @@ Copy `custom_components/aerogarden` into your Home Assistant `$HA_HOME/config` d
 
 Add an integration entry as normal from integration section of the home assistant settings.  You'll need the following configuration items
 
-* **Email**: The e-mail registered with your AC Infinity account.
+* **Email**: The e-mail registered with your Aerogarden account.
 * **Password**: The password for this account.
 
 ![Initial-Setup](/images/initial-setup.png)
@@ -66,7 +66,8 @@ Add an integration entry as normal from integration section of the home assistan
 
 After adding an integration entry, the following additional configurations can be modified via the configuration options dialog.
 
-* **Polling Interval (Seconds)**: The time between update calls to the AC Infinity API.  Minimum allowed polling interval is 30 seconds.
+* **Polling Interval (Seconds)**: The time between update calls to the Aerogarden API.  Minimum allowed polling interval is 30 seconds.
+* **Update Password**: When provided, updates the password used to connect to your Aerogarden account.  Requires Home Assistant restart.
 
 ![Additional-Configuration](/images/additional-configuration.png)
 
