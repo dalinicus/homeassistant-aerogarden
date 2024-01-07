@@ -48,7 +48,7 @@ SENSOR_DESCRIPTIONS: list[AerogardenSensorDescription] = [
         key=GARDEN_KEY_PLANTED_DAY,
         translation_key="planted_days",
         device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.DAYS,
+        unit_of_measurement=UnitOfTime.DAYS,
         icon="mdi:calendar",
         value_fn=lambda aerogarden, config_id: (
             aerogarden.get_garden_property(config_id, GARDEN_KEY_PLANTED_DAY)
@@ -58,7 +58,7 @@ SENSOR_DESCRIPTIONS: list[AerogardenSensorDescription] = [
         key=GARDEN_KEY_NUTRI_REMIND_DAY,
         translation_key="nutrient_days",
         device_class=SensorDeviceClass.DURATION,
-        native_unit_of_measurement=UnitOfTime.DAYS,
+        unit_of_measurement=UnitOfTime.DAYS,
         icon="mdi:calendar-clock",
         value_fn=lambda aerogarden, config_id: (
             aerogarden.get_garden_property(config_id, GARDEN_KEY_NUTRI_REMIND_DAY)
