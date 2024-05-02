@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the aerogarden platform from a config entry."""
-    _LOGGER.info("Initializing aerogarden platform for %(entry_id)s", entry.entry_id)
+    _LOGGER.info("Initializing aerogarden platform for %s", entry.entry_id)
 
     hass.data.setdefault(DOMAIN, {})
     polling_interval = (
@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.info("Unloading aerogarden platform for %(entry_id)s", entry.entry_id)
+    _LOGGER.info("Unloading aerogarden platform for %s", entry.entry_id)
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
