@@ -25,8 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Setup the aerogarden platform from a config entry."""
-    _LOGGER.info("Initializing aerogarden platform for %(entry_id)s", entry.entry_id)
+    """Set up the aerogarden platform from a config entry."""
+    _LOGGER.info("Initializing aerogarden platform for %s", entry.entry_id)
 
     hass.data.setdefault(DOMAIN, {})
     polling_interval = (
@@ -35,8 +35,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         else DEFAULT_POLLING_INTERVAL
     )
 
-    aerogarden = Aerogarden(HOST, entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD])
-    coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, polling_interval)
+    ag_service = Aerogarden(HOST, entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD])
+    coordinator = AerogardenDataUpdateCoordinator(hass, ag_service, polling_interval)
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.info("Unloading aerogarden platform for %(entry_id)s", entry.entry_id)
+    _LOGGER.info("Unloading aerogarden platform for %s", entry.entry_id)
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
@@ -59,7 +59,7 @@ class AerogardenDataUpdateCoordinator(DataUpdateCoordinator[Aerogarden]):
     """Handles updating data for the integration"""
 
     def __init__(
-        self, hass: HomeAssistant, aerogarden: Aerogarden, polling_interval: int
+        self, hass: HomeAssistant, ag_service: Aerogarden, polling_interval: int
     ) -> None:
         """Constructor"""
         super().__init__(
@@ -69,7 +69,7 @@ class AerogardenDataUpdateCoordinator(DataUpdateCoordinator[Aerogarden]):
             update_interval=timedelta(seconds=polling_interval),
         )
 
-        self._aerogarden = aerogarden
+        self._aerogarden = ag_service
 
     async def _async_update_data(self):
         """Fetch data from the Aerogarden API"""

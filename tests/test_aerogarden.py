@@ -18,6 +18,7 @@ PASSWORD = "hunter2"
 
 CONFIG_ID = 123456
 MAC_ADDR = "12:34:56:78:10:AB"
+# noinspection SpellCheckingInspection
 DEVICES = [
     {
         "configID": CONFIG_ID,
@@ -136,7 +137,7 @@ class TestAerogarden:
         assert len(ids) == 0
 
     async def test_get_garden_name_single_garden(self):
-        """get_garden_name returns the unencoded garden name for the config id passed. For a single garden, it should be verbadum"""
+        """get_garden_name returns the unencoded garden name for the config id passed. For a single garden, it should be verbatim"""
 
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         aerogarden._data = DATA
@@ -180,7 +181,7 @@ class TestAerogarden:
         [(GARDEN_KEY_CONFIG_ID, "232161"), ("MyFakeField", CONFIG_ID)],
     )
     async def test_get_device_property_returns_null_properly(self, field, config_id):
-        """the absence of a value should return None instead of keyerror"""
+        """the absence of a value should return None instead of key-error"""
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         aerogarden._data = DATA
 
@@ -190,30 +191,30 @@ class TestAerogarden:
     async def test_update_logged_in_should_not_be_called_if_not_necessary(
         self, mocker: MockFixture
     ):
-        """if client is already logged in, than log in should not be called"""
+        """if client is already logged in, then log in should not be called"""
 
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=False)
         mocker.patch.object(AerogardenClient, "get_user_devices", return_value=DEVICES)
-        mockLogin: MockType = mocker.patch.object(AerogardenClient, "login")
+        mock_login: MockType = mocker.patch.object(AerogardenClient, "login")
 
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         await aerogarden.update()
 
-        assert mockLogin.called
+        assert mock_login.called
 
     async def test_update_logged_in_should_called_if_not_logged_in(
         self, mocker: MockFixture
     ):
-        """if client is not already logged in, than log in should be called"""
+        """if client is not already logged in, then log in should be called"""
 
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=True)
         mocker.patch.object(AerogardenClient, "get_user_devices", return_value=DEVICES)
-        mockLogin: MockType = mocker.patch.object(AerogardenClient, "login")
+        mock_login: MockType = mocker.patch.object(AerogardenClient, "login")
 
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         await aerogarden.update()
 
-        assert not mockLogin.called
+        assert not mock_login.called
 
     async def test_update_data_set(self, mocker: MockFixture):
         """data should be set once update is called"""
@@ -227,7 +228,7 @@ class TestAerogarden:
 
         assert len(aerogarden._data) == 5
 
-    async def test_update_update_failed_trhwon(self, mocker: MockFixture):
+    async def test_update_update_failed_thrown(self, mocker: MockFixture):
         mocker.patch.object(AerogardenClient, "is_logged_in", return_value=True)
         mocker.patch.object(
             AerogardenClient,
@@ -248,7 +249,7 @@ class TestAerogarden:
     async def test_ac_infinity_device_has_correct_device_info(
         self, garden_type: int, expected_model: str
     ):
-        """getting device returns an model object that contains correct device info for the device registry"""
+        """getting device returns a model object that contains correct device info for the device registry"""
         aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
         aerogarden._data = DATA
         aerogarden._data[CONFIG_ID + 4][GARDEN_KEY_GARDEN_TYPE] = garden_type

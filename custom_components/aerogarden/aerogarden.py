@@ -34,7 +34,7 @@ class Aerogarden:
     def get_garden_name(self, config_id: int):
         planted_name_decoded = self.__get_decoded_garden_name(config_id)
 
-        is_multi_garden = self.__is_multi_guarden(config_id)
+        is_multi_garden = self.__is_multi_garden(config_id)
         if not is_multi_garden:
             return planted_name_decoded
 
@@ -86,10 +86,10 @@ class Aerogarden:
             self.get_garden_property(config_id, GARDEN_KEY_PLANTED_NAME)
         ).decode("utf-8")
 
-    def __is_multi_guarden(self, config_id: int) -> bool:
+    def __is_multi_garden(self, config_id: int) -> bool:
         choose_garden = self.get_garden_property(config_id, GARDEN_KEY_CHOOSE_GARDEN)
         if choose_garden > 0:
-            return True  # if chooseGuarden is greater than 0, this is the right half of a multi-garden
+            return True  # if choose_garden is greater than 0, this is the right half of a multi-garden
 
         # if another garden exists with the same airGuid and a non-zero chooseGarden, this is the left half of a multi-garden
         air_guid = self.get_garden_property(config_id, GARDEN_KEY_AIR_GUID)
@@ -99,7 +99,8 @@ class Aerogarden:
             for garden in self._data.values()
         )
 
-    def __get_device_model_by_device_type(self, device_type: int):
+    @staticmethod
+    def __get_device_model_by_device_type(device_type: int):
         match device_type:
             case 5:
                 return "Aerogarden Bounty"

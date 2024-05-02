@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock
 import pytest
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_EMAIL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from pytest_mock import MockFixture
@@ -30,6 +31,7 @@ MockType = Union[
 ]
 
 CONFIG_ID = 123456
+# noinspection SpellCheckingInspection
 DEVICES = [
     {
         "configID": CONFIG_ID,
@@ -100,7 +102,6 @@ class EntitiesTracker:
     def add_entities_callback(
         self,
         new_entities: list[AerogardenBinarySensor],
-        update_before_add: bool = False,
     ):
         self._added_entities = new_entities
 
@@ -114,27 +115,33 @@ def setup(mocker: MockFixture):
         Entity, "async_write_ha_state", return_value=None
     )
 
-    mocker.patch.object(ConfigEntry, "__init__", return_value=None)
     mocker.patch.object(HomeAssistant, "__init__", return_value=None)
 
-    aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
-    mocker.patch.object(aerogarden, "update", return_value=future)
+    ag_service = Aerogarden(HOST, EMAIL, PASSWORD)
+    mocker.patch.object(ag_service, "update", return_value=future)
 
-    aerogarden._data = {CONFIG_ID: DEVICES[0]}
+    ag_service._data = {CONFIG_ID: DEVICES[0]}
 
     hass = HomeAssistant("/path")
-    coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
+    coordinator = AerogardenDataUpdateCoordinator(hass, ag_service, 10)
 
     hass.data = {DOMAIN: {ENTRY_ID: coordinator}}
 
-    configEntry = ConfigEntry()
-    configEntry.entry_id = ENTRY_ID
+    config_entry = ConfigEntry(
+        entry_id=ENTRY_ID,
+        data={CONF_EMAIL: "unittest@ha.com"},
+        domain=DOMAIN,
+        minor_version=0,
+        source="",
+        title="",
+        version=0,
+    )
 
     entities = EntitiesTracker()
 
     return (
         hass,
-        configEntry,
+        config_entry,
         entities,
         write_ha_mock,
     )
@@ -142,8 +149,9 @@ def setup(mocker: MockFixture):
 
 @pytest.mark.asyncio
 class TestBinarySensor:
+    @staticmethod
     async def __execute_and_get_sensor(
-        self, setup, garden_key: str
+        setup, garden_key: str
     ) -> AerogardenBinarySensor:
         entities: EntitiesTracker
         (hass, configEntry, entities, _) = setup
@@ -162,9 +170,9 @@ class TestBinarySensor:
     async def test_async_setup_all_sensors_created(self, setup):
         """All sensors created"""
         entities: EntitiesTracker
-        (hass, configEntry, entities, _) = setup
+        (hass, config_entry, entities, _) = setup
 
-        await async_setup_entry(hass, configEntry, entities.add_entities_callback)
+        await async_setup_entry(hass, config_entry, entities.add_entities_callback)
 
         assert len(entities._added_entities) == 4
 

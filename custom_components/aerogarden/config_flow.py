@@ -52,6 +52,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore
 
         errors: dict[str, str] = {}
         if user_input is not None:
+            # noinspection PyBroadException
             try:
                 client = AerogardenClient(
                     HOST,
@@ -102,6 +103,7 @@ class OptionsFlow(config_entries.OptionsFlow):
 
             if password:
                 email = self.config_entry.data[CONF_EMAIL]
+                # noinspection PyBroadException
                 try:
                     client = AerogardenClient(
                         HOST,
@@ -141,6 +143,7 @@ class OptionsFlow(config_entries.OptionsFlow):
         cur_value = (
             int(self.config_entry.data[CONF_POLLING_INTERVAL])
             if CONF_POLLING_INTERVAL in self.config_entry.data
+            and self.config_entry.data[CONF_POLLING_INTERVAL] is not None
             else DEFAULT_POLLING_INTERVAL
         )
 
