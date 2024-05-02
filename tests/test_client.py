@@ -21,6 +21,7 @@ AIR_GUID = "12:34:56:78:10:AB"
 CHOOSE_GARDEN = 0
 PLANT_CONFIG = '{{ "lightTemp": 1 }}'
 
+# noinspection SpellCheckingInspection
 DEVICES_PAYLOAD = [
     {
         "configID": CONFIG_ID,
@@ -113,7 +114,7 @@ class TestClient:
 
     @pytest.mark.parametrize("status_code", [400, 401, 403, 404, 500])
     async def test_login_api_connect_error_raised_on_http_error(self, status_code):
-        """When login is called and returns a non-succesful status code, connect error should be raised"""
+        """When login is called and returns a non-successful status code, connect error should be raised"""
 
         with aioresponses() as mocked:
             mocked.post(
@@ -131,7 +132,7 @@ class TestClient:
 
     @pytest.mark.parametrize("code", [-4, -2, -1])
     async def test_login_api_auth_error_on_failed_login(self, code):
-        """When login is called and returns a non-succesful status code, connect error should be raised"""
+        """When login is called and returns a non-successful status code, connect error should be raised"""
 
         with aioresponses() as mocked:
             mocked.post(

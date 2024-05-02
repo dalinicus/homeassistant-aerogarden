@@ -5,7 +5,7 @@ MANUFACTURER = "Aerogarden"
 DOMAIN = "aerogarden"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 USER_AGENT_VERSION = "1.0.0"
-HOST = "https://app3.aerogarden.com:8443"
+HOST = "https://app4.aerogarden.com"
 
 CONF_POLLING_INTERVAL = "polling_interval"
 CONF_UPDATE_PASSWORD = "update_password"

@@ -26,29 +26,35 @@ def setup(mocker: MockFixture):
     future: Future = Future()
     future.set_result(None)
 
-    boolFuture: Future = Future()
-    boolFuture.set_result(True)
+    bool_future: Future = Future()
+    bool_future.set_result(True)
 
     mocker.patch.object(Aerogarden, "update", return_value=future)
     mocker.patch.object(HomeAssistant, "__init__", return_value=None)
-    mocker.patch.object(ConfigEntry, "__init__", return_value=None)
     mocker.patch.object(ConfigEntries, "__init__", return_value=None)
     mocker.patch.object(
         ConfigEntries, "async_forward_entry_setups", return_value=future
     )
     mocker.patch.object(
-        ConfigEntries, "async_unload_platforms", return_value=boolFuture
+        ConfigEntries, "async_unload_platforms", return_value=bool_future
     )
 
-    config_entry = ConfigEntry()
-    config_entry.entry_id = ENTRY_ID
-    config_entry.data = {CONF_HOST: HOST, CONF_EMAIL: EMAIL, CONF_PASSWORD: PASSWORD}
+    config_entry = ConfigEntry(
+        entry_id=ENTRY_ID,
+        data={CONF_HOST: HOST, CONF_EMAIL: EMAIL, CONF_PASSWORD: PASSWORD},
+        domain=DOMAIN,
+        minor_version=0,
+        source="",
+        title="",
+        version=0,
+    )
 
     hass = HomeAssistant("/path")
-    hass.config_entries = ConfigEntries()
+    hass.config_entries = ConfigEntries(hass=hass, hass_config={ENTRY_ID: config_entry})
+
     hass.data = {}
 
-    return (hass, config_entry)
+    return hass, config_entry
 
 
 @pytest.mark.asyncio
@@ -61,7 +67,7 @@ class TestInit:
 
         assert hass.data[DOMAIN][ENTRY_ID] is not None
 
-    async def test_async_setup_entry_platforms_initalized(self, setup):
+    async def test_async_setup_entry_platforms_initialized(self, setup):
         """When setting up, all platforms should be initialized"""
         hass: HomeAssistant
         (hass, config_entry) = setup
@@ -69,6 +75,7 @@ class TestInit:
         result = await async_setup_entry(hass, config_entry)
 
         assert result
+
         hass.config_entries.async_forward_entry_setups.assert_called_with(
             config_entry, PLATFORMS
         )
@@ -81,7 +88,8 @@ class TestInit:
         result = await async_unload_entry(hass, config_entry)
 
         assert result
-        hass.config_entries.async_unload_platforms.assert_called_with(
+
+        hass.config_entries.async_unload_platforms.sassert_called_with(
             config_entry, PLATFORMS
         )
 

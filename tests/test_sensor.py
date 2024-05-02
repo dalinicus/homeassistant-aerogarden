@@ -1,11 +1,11 @@
 from asyncio import Future
-from typing import Union
+from typing import Union, cast
 from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock
 
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTime
+from homeassistant.const import CONF_EMAIL, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from pytest_mock import MockFixture
@@ -32,6 +32,7 @@ MockType = Union[
     NonCallableMagicMock,
 ]
 CONFIG_ID = 123456
+# noinspection SpellCheckingInspection
 DEVICES = [
     {
         "configID": CONFIG_ID,
@@ -102,7 +103,6 @@ class EntitiesTracker:
     def add_entities_callback(
         self,
         new_entities: list[AerogardenEntity],
-        update_before_add: bool = False,
     ):
         self._added_entities = new_entities
 
@@ -112,42 +112,47 @@ def setup(mocker: MockFixture):
     future: Future = Future()
     future.set_result(None)
 
-    mocker.patch.object(ConfigEntry, "__init__", return_value=None)
     mocker.patch.object(HomeAssistant, "__init__", return_value=None)
     write_ha_mock = mocker.patch.object(
         Entity, "async_write_ha_state", return_value=None
     )
 
-    aerogarden = Aerogarden(HOST, EMAIL, PASSWORD)
-    mocker.patch.object(aerogarden, "update", return_value=future)
+    ag_service = Aerogarden(HOST, EMAIL, PASSWORD)
+    mocker.patch.object(ag_service, "update", return_value=future)
 
-    aerogarden._data = {CONFIG_ID: DEVICES[0]}
+    ag_service._data = {CONFIG_ID: DEVICES[0]}
 
     hass = HomeAssistant("/path")
-    coordinator = AerogardenDataUpdateCoordinator(hass, aerogarden, 10)
+    coordinator = AerogardenDataUpdateCoordinator(hass, ag_service, 10)
 
     hass.data = {DOMAIN: {ENTRY_ID: coordinator}}
 
-    configEntry = ConfigEntry()
-    configEntry.entry_id = ENTRY_ID
+    config_entry = ConfigEntry(
+        entry_id=ENTRY_ID,
+        data={CONF_EMAIL: "unittest@ha.com"},
+        domain=DOMAIN,
+        minor_version=0,
+        source="",
+        title="",
+        version=0,
+    )
 
     entities = EntitiesTracker()
 
-    return (hass, configEntry, entities, write_ha_mock)
+    return hass, config_entry, entities, write_ha_mock
 
 
 @pytest.mark.asyncio
 class TestSensor:
-    async def __execute_and_get_sensor(
-        self, setup, garden_key: str
-    ) -> AerogardenSensor:
+    @staticmethod
+    async def __execute_and_get_sensor(setup, garden_key: str) -> AerogardenSensor:
         entities: EntitiesTracker
         (hass, configEntry, entities, _) = setup
 
         await async_setup_entry(hass, configEntry, entities.add_entities_callback)
 
         found = [
-            sensor
+            cast(AerogardenSensor, sensor)
             for sensor in entities._added_entities
             if garden_key in sensor.unique_id
         ]
@@ -165,7 +170,7 @@ class TestSensor:
         assert len(entities._added_entities) == 3
 
     async def test_async_setup_entry_planted_day_created(self, setup):
-        """Sensor for how many days since the garden was first planeted is created on setup"""
+        """Sensor for how many days since the garden was first planted is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PLANTED_DAY)
 
@@ -177,7 +182,7 @@ class TestSensor:
         assert sensor.aerogarden is not None
         assert sensor.native_value == 43
 
-    async def test_async_setup_entry_nutrient_days_created(self, mocker, setup):
+    async def test_async_setup_entry_nutrient_days_created(self, setup):
         """Sensor for how many days left in the current nutrient cycle is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_NUTRI_REMIND_DAY)
@@ -190,7 +195,7 @@ class TestSensor:
         assert sensor.aerogarden is not None
         assert sensor.native_value == 6
 
-    async def test_async_setup_entry_pump_level_created(self, mocker, setup):
+    async def test_async_setup_entry_pump_level_created(self, setup):
         """Sensor for the current reservoir water level is created on setup"""
 
         sensor = await self.__execute_and_get_sensor(setup, GARDEN_KEY_PUMP_LEVEL)

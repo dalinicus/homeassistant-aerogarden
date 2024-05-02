@@ -68,7 +68,7 @@ class AerogardenClient:
         )
 
     async def update_device_config(
-        self, airGuid: str, chooseGarden: int, plantConfig: str
+        self, air_guid: str, choose_garden: int, plant_config: str
     ):
         """Update a garden config using a given plant config patch document. Requires client to be logged in."""
         if not self.is_logged_in():
@@ -78,9 +78,9 @@ class AerogardenClient:
             API_URL_UPDATE_DEVICE_CONFIG,
             {
                 GARDEN_KEY_USER_ID: self._user_id,
-                GARDEN_KEY_AIR_GUID: airGuid,
-                GARDEN_KEY_CHOOSE_GARDEN: chooseGarden,
-                GARDEN_KEY_PLANT_CONFIG: plantConfig,
+                GARDEN_KEY_AIR_GUID: air_guid,
+                GARDEN_KEY_CHOOSE_GARDEN: choose_garden,
+                GARDEN_KEY_PLANT_CONFIG: plant_config,
             },
         )
 

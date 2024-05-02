@@ -3,3 +3,14 @@ aiohttp
 voluptuous
 datetime
 async_timeout
+pre-commit
+pytest
+pytest-mock
+pytest-cov
+pytest-asyncio
+aioresponses
+black
+codespell
+ruff
+aioresponses
+mypy
