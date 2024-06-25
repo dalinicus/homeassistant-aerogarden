@@ -53,7 +53,6 @@ This integration is made available through the Home Assistant Community Store de
 
 Please see the [official HACS documentation](https://hacs.xyz) for information on how to install and use HACS.
 
-
 ### Manual Installation
 
 Copy `custom_components/aerogarden` into your Home Assistant `$HA_HOME/config` directory, then restart Home Assistant
