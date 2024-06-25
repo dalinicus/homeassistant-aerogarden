@@ -47,8 +47,7 @@ Other models are expected to work. Actively interested in users with a multi-gar
 
 ### HACS
 
-
-This integration is made available through the default HACS feed.  Simply search for and install the integration from the HACS interface as normal.  
+This integration is made available through the Home Assistant Community Store default feed.  Simply search for "Aerogarden" and install it directly from HACS.
 
 ![HACS-Instal](/images/hacs-install.png)
 
