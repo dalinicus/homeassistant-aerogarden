@@ -11,7 +11,7 @@
 [![HACS/HASS](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/validate.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/validate.yaml)
 [![CodeQL](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/codeql.yaml/badge.svg)](https://github.com/dalinicus/homeassistant-aerogarden/actions/workflows/codeql.yaml)
 
-This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wifi hydroponic gardens.
+This is a custom component for [Home Assistant](http://home-assistant.io) that adds support for the Miracle Grow [AeroGarden](http://www.aerogarden.com) Wi-fi hydroponic gardens.
 
 ## Background
 
@@ -38,7 +38,7 @@ A device will be created for each Aerogarden registered in a user's Aerogarden a
 
 ## Tested Models
 
-* Harvest Wifi
+* Harvest Wi-fi
 * Bounty
 
 Other models are expected to work. Actively interested in users with a multi-garden setup to test code paths I cannot with my single-garden setup.
@@ -47,7 +47,13 @@ Other models are expected to work. Actively interested in users with a multi-gar
 
 ### HACS
 
-Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories/) to add this git repository as a custom HACS repository. Then install from HACS as normal.
+
+This integration is made available through the default HACS feed.  Simply search for and install the integration from the HACS interface as normal.  
+
+![HACS-Instal](/images/hacs-install.png)
+
+Please see the [official HACS documentation](https://hacs.xyz) for information on how to install and use HACS.
+
 
 ### Manual Installation
 
