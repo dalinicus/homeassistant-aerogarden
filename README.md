@@ -1,12 +1,10 @@
-# IMPORTANT NOTE
-
-Unfortunetly, currently this integraiton is in a broken state.
-
 On June 26th, Aerogarden launched their new Android and iOS app, replacing the old app.  This came with the consiquence of a new backend API, replacing the old API that this integration used to gather information for Home Assistant.  While the old API is still functioning, its returning stale data from the time that Aerogarden swapped over to the new system.
 
-I've tried sliding in a web proxy to record HTTPS traffic and determine the new API schema and login mechanism, but unfortunetly the new app also validates its own certificates rather than using the system certificate store.  Determining the information we'd need to fix the integration may be outside my current expertese.
+In October 2024, Aerogarden announced they would be shutting down operations.
 
-If you have experence with Android or iOS app development, and think you'd be able to reverse engineer how the new app make's its calls to the new API, please reach out via [the existing Issue thread](https://github.com/dalinicus/homeassistant-aerogarden/issues/36).  Any insight would be greatly appecaited.
+![image](https://github.com/user-attachments/assets/81763d6a-e98b-4944-8e4b-9fa681ee7672)
+
+With the old functionality broken, and the likelyhood that any new functionality would be non-operational after January 2025, this HACS integration is now archived.  Thanks to anyone that installed and found it useful :) 
 
 Thanks,
 
